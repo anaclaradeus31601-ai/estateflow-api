@@ -16,6 +16,14 @@ export class OwnerService {
       throw new UnauthorizedException('Owner with this email already exists');
     }
 
+    const cnpjExists = await this.prisma.owner.findUnique({
+      where: { cpfCnpj: createOwnerDto.cpfCnpj },
+    });
+
+    if (cnpjExists) {
+      throw new UnauthorizedException('Owner with this CPF/CNPJ already exists');
+    }
+
     return this.prisma.owner.create({
       data: {
         name: createOwnerDto.name,

@@ -1,0 +1,13 @@
+
+GET http://localhost:3000/propertyamenity
+Content-Type: application/json
+
+###
+POST http://localhost:3000/propertyamenity
+Content-Type: application/json
+
+{
+    "propertyId": "cmp7sw3gx0001kzlso9xlrcl1",
+    "amenityId": "3",
+    "value": "Piscina aquecida"
+}

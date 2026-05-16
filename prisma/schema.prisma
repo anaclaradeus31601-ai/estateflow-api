@@ -9,6 +9,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  //ignorar esse url, ele é sobrescrito pelo .env
   url      = env("DATABASE_URL")
 }
 
@@ -76,10 +77,29 @@ model User {
   visitsAsClient      Visit[]    @relation("ClientVisits")
   contractsAsClient   Contract[] @relation("ClientContracts")
   payments            Payment[]
+  visitsAsRealtor Visit[] @relation("RealtorVisits")
+  sessions Session[]
 
   @@index([email])
   @@index([role])
 }
+
+model Session {
+  id            String   @id @default(cuid())
+
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  refreshToken  String   @unique
+
+  ip            String?
+  userAgent     String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  expiresAt     DateTime
+}
+
 
 model Owner {
   id          String   @id @default(cuid())
@@ -193,7 +213,7 @@ model Visit {
   id         String      @id @default(cuid())
   propertyId String
   clientId   String
-  realtorId  String?
+  realtorId  String
   
   scheduledAt DateTime
   duration    Int?        // em minutos
@@ -204,6 +224,7 @@ model Visit {
   
   property    Property    @relation(fields: [propertyId], references: [id])
   client      User        @relation("ClientVisits", fields: [clientId], references: [id])
+  realtor     User?       @relation("RealtorVisits",fields: [realtorId],references: [id])
   
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt

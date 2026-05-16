@@ -1,0 +1,157 @@
+@baseUrl = http://localhost:3000
+@contentType = application/json
+
+### 1. Criar Usuário Administrador
+# @name createAdmin
+POST http://localhost:3000/users
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@imobiliaria.com",
+  "password": "SenhaSegura123!",
+  "name": "Carlos Administrador",
+  "phone": "+5511999999999",
+  "role": "ADMIN",
+  "emailVerified": true
+}
+
+### 2. Criar Usuário Corretor (Realtor)
+# @name createRealtor
+POST {{baseUrl}}/api/users
+Content-Type: {{contentType}}
+
+{
+  "email": "roberto.corretor@imobiliaria.com",
+  "password": "SenhaSegura123!",
+  "name": "Roberto Silva",
+  "phone": "+5511988888888",
+  "role": "REALTOR",
+  "emailVerified": true
+}
+
+### 3. Criar Usuário Cliente
+# @name createClient
+POST {{baseUrl}}/api/users
+Content-Type: {{contentType}}
+
+{
+  "email": "cliente.joao@email.com",
+  "password": "SenhaSegura123!",
+  "name": "João Souza",
+  "phone": "+5511977777777",
+  "role": "CLIENT",
+  "emailVerified": true
+}
+
+### 4. Criar Proprietário (Owner)
+# @name createOwner
+POST {{baseUrl}}/api/owners
+Content-Type: {{contentType}}
+
+{
+  "name": "Maria Oliveira Pascoal",
+  "email": "maria.owner@email.com",
+  "phone": "+5511966666666",
+  "cpfCnpj": "12345678901",
+  "address": "Av. Paulista, 1000 - São Paulo/SP"
+}
+
+### 5. Criar Comodidades (Amenities)
+# @name createAmenityPiscina
+POST {{baseUrl}}/api/amenities
+Content-Type: {{contentType}}
+
+{
+  "name": "Piscina",
+  "icon": "pool",
+  "category": "Lazer"
+}
+
+### 6. Criar um Imóvel (Property)
+# ATENÇÃO: Substitua o ownerId e realtorId pelos IDs gerados acima se sua API não aceitar nomes.
+# @name createProperty
+POST {{baseUrl}}/api/properties
+Content-Type: {{contentType}}
+
+{
+  "title": "Apartamento Luxo Itaim Bibi",
+  "description": "Lindo apartamento mobiliado com 3 suítes e varanda gourmet.",
+  "type": "RESIDENTIAL",
+  "transactionType": "RENT",
+  "status": "AVAILABLE",
+  "street": "Rua Tabapuã",
+  "number": "500",
+  "complement": "Apto 122",
+  "neighborhood": "Itaim Bibi",
+  "city": "São Paulo",
+  "state": "SP",
+  "zipCode": "04533-001",
+  "country": "Brasil",
+  "area": 120.5,
+  "bedrooms": 3,
+  "bathrooms": 4,
+  "garages": 2,
+  "rentPrice": 6500.00,
+  "condominiumFee": 1200.00,
+  "iptu": 350.00,
+  "images": [
+    "https://images.com/foto1.jpg",
+    "https://images.com/foto2.jpg"
+  ],
+  "videos": [],
+  "featured": true,
+  "ownerId": "ID_DO_OWNER_AQUI", 
+  "realtorId": "ID_DO_REALTOR_AQUI"
+}
+
+### 7. Vincular Comodidade ao Imóvel (PropertyAmenity)
+POST {{baseUrl}}/api/property-amenities
+Content-Type: {{contentType}}
+
+{
+  "propertyId": "ID_DO_PROPERTY_AQUI",
+  "amenityId": "ID_DO_AMENITY_AQUI",
+  "value": "Aquecida"
+}
+
+### 8. Agendar uma Visita (Visit)
+POST {{baseUrl}}/api/visits
+Content-Type: {{contentType}}
+
+{
+  "propertyId": "ID_DO_PROPERTY_AQUI",
+  "clientId": "ID_DO_CLIENT_AQUI",
+  "realtorId": "ID_DO_REALTOR_AQUI",
+  "scheduledAt": "2026-06-15T14:00:00.000Z",
+  "duration": 45,
+  "status": "SCHEDULED",
+  "notes": "Cliente tem interesse em fechar contrato rápido se gostar do imóvel."
+}
+
+### 9. Criar um Contrato (Contract)
+# @name createContract
+POST {{baseUrl}}/api/contracts
+Content-Type: {{contentType}}
+
+{
+  "propertyId": "ID_DO_PROPERTY_AQUI",
+  "clientId": "ID_DO_CLIENT_AQUI",
+  "transactionType": "RENT",
+  "status": "DRAFT",
+  "startDate": "2026-06-01T00:00:00.000Z",
+  "endDate": "2028-06-01T00:00:00.000Z",
+  "rentValue": 6500.00,
+  "terms": "Contrato padrão de locação residencial pelo período de 30 meses..."
+}
+
+### 10. Lançar um Pagamento (Payment)
+POST {{baseUrl}}/api/payments
+Content-Type: {{contentType}}
+
+{
+  "contractId": "ID_DO_CONTRACT_AQUI",
+  "userId": "ID_DO_CLIENT_AQUI",
+  "amount": 8050.00, 
+  "dueDate": "2026-07-10T00:00:00.000Z",
+  "status": "PENDING"
+}

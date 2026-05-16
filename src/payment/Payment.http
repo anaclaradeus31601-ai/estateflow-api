@@ -1,0 +1,16 @@
+
+GET http://localhost:3000/payment
+
+###
+
+POST http://localhost:3000/payment
+Content-Type: application/json
+
+{
+    "contractId": "cmp8crarz0001kzv6yi95w86b",
+    "userId": "cmp7owa3y0000kz2mp706yb20",
+    "amount": 1500.00,
+    "dueDate": "2024-06-30",
+    "paidDate": "2024-06-15",
+    "status": "PENDING"
+}

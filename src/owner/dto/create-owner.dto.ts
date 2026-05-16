@@ -1,9 +1,6 @@
 import { IsEmail,IsString, IsNotEmpty } from 'class-validator';
-import { Type } from 'class-transformer';
 
-export class CreateOwnerDto {
-    @IsString()
-    id!: string  
+export class CreateOwnerDto { 
 
     @IsNotEmpty()
     @IsString()

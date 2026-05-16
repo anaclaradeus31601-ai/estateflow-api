@@ -1,0 +1,17 @@
+
+
+GET http://localhost:3000/amenity
+
+
+###
+
+POST http://localhost:3000/amenity
+Content-Type: application/json
+
+{
+    "id": "3",
+    "name": "Piscina",
+    "icon": "https://example.com/icons/pool.png",
+    "category": "LAZER"
+
+}

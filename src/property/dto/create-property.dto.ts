@@ -19,10 +19,6 @@ import {
 } from 'class-validator';
 
 export class CreatePropertyDto {
-  @IsOptional()
-  @IsString()
-  id?: string;
-
   // Informações principais
   @IsString()
   @IsNotEmpty()

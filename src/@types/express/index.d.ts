@@ -6,5 +6,14 @@ declare global {
     export interface Request {
       user?: User,
     }
+    interface Request {
+      user?: {
+        sub: string;
+        email: string;
+        role: UserRole;
+        name: string;
+      };
+    }
+
   }
 }

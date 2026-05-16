@@ -1,0 +1,19 @@
+
+
+
+GET http://localhost:3000/visit
+
+###
+POST http://localhost:3000/visit
+Content-Type: application/json
+
+{
+    "date": "2024-06-01T10:00:00Z",
+    "propertyId": "cmp7sw3gx0001kzlso9xlrcl1",
+    "clientId": "cmp7owa3y0000kz2mp706yb20",
+    "realtorId": "cmp7rw7f20000kzjzf13ar2x4",
+    "scheduledAt": "2024-06-01T10:00:00Z",
+    "duration": 60,
+    "status": "SCHEDULED",
+    "notes": "Client is interested in the property and wants to see it on June 1st at 10 AM."
+}

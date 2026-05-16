@@ -6,9 +6,14 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { OwnerModule } from './owner/owner.module';
 import { PropertyModule } from './property/property.module';
+import { AmenityModule } from './amenity/amenity.module';
+import { PropertyamenityModule } from './propertyamenity/propertyamenity.module';
+import { VisitModule } from './visit/visit.module';
+import { ContractModule } from './contract/contract.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
-  imports: [UsersModule, PrismaModule, AuthModule, OwnerModule, PropertyModule],
+  imports: [UsersModule, PrismaModule, AuthModule, OwnerModule, PropertyModule, AmenityModule, PropertyamenityModule, VisitModule, ContractModule, PaymentModule],
   controllers: [AppController],
   providers: [AppService],
 })

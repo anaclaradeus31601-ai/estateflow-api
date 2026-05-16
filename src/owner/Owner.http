@@ -1,12 +1,14 @@
 
 POST http://localhost:3000/owner
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiQWRtaW4gMSIsImVtYWlsIjoiYWRtaW4xQGV4YW1wbGUuY29tIiwicm9sZSI6IkFETUlOIiwic3ViIjoiY21wOGFnanVqMDAwMGt6dzZmMGhmMWtvYiIsImlhdCI6MTc3ODkzMjYwNiwiZXhwIjoxNzc4OTM2MjA2fQ.iNv42-uG6nP5vlqdzKxf6n5L1fJOnBJSlTeWmqVNdmY
 
 {
-  "name": "John Doe",
-  "email": "john.doe@example.com",
+  "id": "2",
+  "name": "Teste Rota de Admin 2",
+  "email": "teste@example.com",
   "phone": "123456789",
-  "cpfCnpj": "12345678901",
+  "cpfCnpj": "1236475922",
   "address": "123 Main St"
 }
 

@@ -1,34 +1,47 @@
 POST http://localhost:3000/users
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiQW5hIENsYXJhIFNhbnRvcyBkZSBEZXVzIiwiZW1haWwiOiJhbmFjbGFyYTIxNjAxQGdtYWlsLmNvbSIsInJvbGUiOiJDTElFTlQiLCJzdWIiOiJjbXA3b3dhM3kwMDAwa3oybXA3MDZ5YjIwIiwiaWF0IjoxNzc4OTAxMjUzLCJleHAiOjE3Nzg5MDQ4NTN9.BiTKCjmYuubeaMwS_r6SjsXMSgSmL47KX0hijNzGIx8
 
 {
-  "name": "Realtor 1",
-  "email": "realtor1@example.com",
-  "password": "realtor123",
-  "role": "REALTOR"
+  "name": "Admin 1",
+  "email": "admin1@example.com",
+  "password": "admin123",
+  "role": "ADMIN"
 }
 
 ###
 GET http://localhost:3000/users
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiQW5hIENsYXJhIFNhbnRvcyBkZSBEZXVzIiwiZW1haWwiOiJhbmFjbGFyYTIxNjAxQGdtYWlsLmNvbSIsInJvbGUiOiJDTElFTlQiLCJzdWIiOiJjbXA3b3dhM3kwMDAwa3oybXA3MDZ5YjIwIiwiaWF0IjoxNzc4OTAxMjUzLCJleHAiOjE3Nzg5MDQ4NTN9.BiTKCjmYuubeaMwS_r6SjsXMSgSmL47KX0hijNzGIx8
-
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiQW5hIENsYXJhIFNhbnRvcyBkZSBEZXVzIiwiZW1haWwiOiJhbmFjbGFyYTIxNjAxQGdtYWlsLmNvbSIsInJvbGUiOiJDTElFTlQiLCJzdWIiOiJjbXA3b3dhM3kwMDAwa3oybXA3MDZ5YjIwIiwiaWF0IjoxNzc4OTMyNDA4LCJleHAiOjE3Nzg5MzYwMDh9.j53pc-ACozFDrtjhmErhHkB-NkwJcK3tzwynmXzIUrc
 ###
+
 POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-    "email": "anaclara21601@gmail.com",
-    "password": "Clara1701@"
+    "email": "admin1@example.com",
+    "password": "admin123"
 }
+###
+
+POST http://localhost:3000/auth/logout
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiQWRtaW4gMSIsImVtYWlsIjoiYWRtaW4xQGV4YW1wbGUuY29tIiwicm9sZSI6IkFETUlOIiwic3ViIjoiY21wOGFnanVqMDAwMGt6dzZmMGhmMWtvYiIsImlhdCI6MTc3ODk0NDA0NywiZXhwIjoxNzc4OTQ3NjQ3fQ.zxePbviz4Q69UhcwtMnrniQTJaT9uVslyk5iIXDwMAs
 
 ###
-POST http://localhost:3000/auth/register 
+
+POST http://localhost:3000/auth/refresh-token
+Content-Type: application/json
+{
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiQWRtaW4gMSIsImVtYWlsIjoiYWRtaW4xQGV4YW1wbGUuY29tIiwicm9sZSI6IkFETUlOIiwic3ViIjoiY21wOGFnanVqMDAwMGt6dzZmMGhmMWtvYiIsImlhdCI6MTc3ODk0Mzk5NSwiZXhwIjoxNzc5NTQ4Nzk1fQ.bxxRj3A8c81I8lbGD_bloa3A3xZOzGQVmzaV4JLQtf8"
+}
+
+
+###
+POST http://localhost:3000/users
 Content-Type: application/json
 
 {
     "name": "Ana Clara Santos de Deus",
-    "email": "anaclara21601@gmail.com",
-    "password": "Clara1701@"
+    "email": "anaclaradeus21601@gmail.com",
+    "password": "Clara1701@",
+    "role": "CLIENT"
 }

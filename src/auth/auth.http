@@ -1,0 +1,20 @@
+### 🔐 LOGIN
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin1@example.com",
+  "password": "admin123"
+}
+
+### 🔁 REFRESH TOKEN
+POST http://localhost:3000/auth/refresh
+Content-Type: application/json
+
+{
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXA4YWdqdWowMDAwa3p3NmYwaGYxa29iIiwiZW1haWwiOiJhZG1pbjFAZXhhbXBsZS5jb20iLCJyb2xlIjoiQURNSU4iLCJuYW1lIjoiQWRtaW4gMSIsImlhdCI6MTc3ODk0NTYyOSwiZXhwIjoxNzc5NTUwNDI5fQ._ABUFnOub7Q0_U5oMFglYf7KZzOH5o-i4SW7g-mb0FI"
+}
+
+### 🚪 LOGOUT
+POST http://localhost:3000/auth/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXA4YWdqdWowMDAwa3p3NmYwaGYxa29iIiwiZW1haWwiOiJhZG1pbjFAZXhhbXBsZS5jb20iLCJyb2xlIjoiQURNSU4iLCJuYW1lIjoiQWRtaW4gMSIsImlhdCI6MTc3ODk0NTQ4MywiZXhwIjoxNzc4OTQ2MzgzfQ.Q7Z_kia_HYwyyh0OkimtJ7tyIRkOXXvn1432JlaTwE8

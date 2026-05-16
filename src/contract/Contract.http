@@ -1,0 +1,37 @@
+
+
+GET http://localhost:3000/contract
+
+
+###
+
+POST http://localhost:3000/contract
+Content-Type: application/json
+
+{
+  "propertyId": "cmp7sw3gx0001kzlso9xlrcl1",
+  "clientId": "cmp7owa3y0000kz2mp706yb20",
+  "transactionType": "RENT",
+  "status": "ACTIVE",
+  "startDate": "2024-01-01",
+  "endDate": "2024-12-31",
+  "rentValue": 1500,
+  "saleValue": 0,
+  "terms": "Termos e condições do contrato",
+  "documentUrl": "Url do documento do contrato"
+}
+
+
+###
+GET http://localhost:3000/contract/{id}
+Content-Type: application/json
+
+{
+  "id": "cmp8crarz0001kzv6yi95w86b"
+}
+
+###
+GET http://localhost:3000/contract/overdue
+
+###
+GET http://localhost:3000/contract/expiring

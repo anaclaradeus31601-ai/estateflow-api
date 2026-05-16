@@ -53,3 +53,24 @@ Content-Type: application/json
 ###
 
 GET http://localhost:3000/property
+
+###
+
+GET http://localhost:3000/property/available
+###
+
+//status: AVAILABLE, PENDING, SOLD, RENTED
+GET http://localhost:3000/property/status/AVAILABLE
+###
+
+//type: RESIDENTIAL, COMMERCIAL, LAND
+GET http://localhost:3000/property/type/RESIDENTIAL
+###
+GET http://localhost:3000/property/city/Araraquara
+###
+GET http://localhost:3000/property/owner/cmp7q34su0000kzxddaxy4oms
+###
+GET http://localhost:3000/property/realtor/cmp7rw7f20000kzjzf13ar2x4
+###
+GET http://localhost:3000/property/price/1000/500000
+###
