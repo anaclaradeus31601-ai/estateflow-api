@@ -7,6 +7,10 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe(
     {transform:true}
   ));
+  app.enableCors({
+  origin: 'http://localhost:5173', // React Vite
+  credentials: true,
+});
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
