@@ -1,0 +1,272 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+enum UserRole {
+  ADMIN
+  CLIENT
+  REALTOR
+}
+
+enum PropertyType {
+  RESIDENTIAL
+  COMMERCIAL
+}
+
+enum TransactionType {
+  RENT
+  SALE
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  RENTED
+  SOLD
+  PENDING
+  MAINTENANCE
+}
+
+enum ContractStatus {
+  DRAFT
+  ACTIVE
+  EXPIRED
+  TERMINATED
+  CANCELLED
+}
+
+enum VisitStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  phone         String?
+  role          UserRole  @default(CLIENT)
+  avatar        String?
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relações
+  propertiesAsRealtor Property[] @relation("RealtorProperties")
+  visitsAsClient      Visit[]    @relation("ClientVisits")
+  contractsAsClient   Contract[] @relation("ClientContracts")
+  payments            Payment[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Owner {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  phone       String
+  cpfCnpj     String   @unique
+  address     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relações
+  properties Property[]
+
+  @@index([cpfCnpj])
+  @@index([email])
+}
+
+model Property {
+  id               String          @id @default(cuid())
+  title            String
+  description      String          @db.Text
+  type             PropertyType
+  transactionType  TransactionType
+  status           PropertyStatus  @default(AVAILABLE)
+  
+  // Endereço
+  street           String
+  number           String
+  complement       String?
+  neighborhood     String
+  city             String
+  state            String
+  zipCode          String
+  country          String          @default("Brasil")
+  
+  // Detalhes do imóvel
+  area             Float
+  bedrooms         Int
+  bathrooms        Int
+  garages          Int?
+  
+  // Valores
+  rentPrice        Float?
+  salePrice        Float?
+  condominiumFee   Float?
+  iptu             Float?
+  
+  // Mídia
+  images           String[]
+  videos           String[]
+  virtualTourUrl   String?
+  
+  // Localização (Google Maps)
+  latitude         Float?
+  longitude        Float?
+  
+  // Metadados
+  featured         Boolean         @default(false)
+  views            Int             @default(0)
+  
+  // Relações
+  ownerId          String
+  owner            Owner           @relation(fields: [ownerId], references: [id])
+  realtorId        String?
+  realtor          User?           @relation("RealtorProperties", fields: [realtorId], references: [id])
+  
+  amenities        PropertyAmenity[]
+  visits           Visit[]
+  contracts        Contract[]
+  
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([type])
+  @@index([transactionType])
+  @@index([status])
+  @@index([ownerId])
+  @@index([realtorId])
+  @@index([city])
+}
+
+model Amenity {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  icon        String?
+  category    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  properties PropertyAmenity[]
+
+  @@index([category])
+}
+
+model PropertyAmenity {
+  id         String   @id @default(cuid())
+  propertyId String
+  amenityId  String
+  value      String?
+  
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenity    Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, amenityId])
+  @@index([propertyId])
+  @@index([amenityId])
+}
+
+model Visit {
+  id         String      @id @default(cuid())
+  propertyId String
+  clientId   String
+  realtorId  String?
+  
+  scheduledAt DateTime
+  duration    Int?        // em minutos
+  status      VisitStatus @default(SCHEDULED)
+  
+  notes       String?     @db.Text
+  feedback    String?     @db.Text
+  
+  property    Property    @relation(fields: [propertyId], references: [id])
+  client      User        @relation("ClientVisits", fields: [clientId], references: [id])
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([propertyId])
+  @@index([clientId])
+  @@index([scheduledAt])
+  @@index([status])
+}
+
+model Contract {
+  id              String          @id @default(cuid())
+  propertyId      String
+  clientId        String
+  
+  transactionType TransactionType
+  status          ContractStatus  @default(DRAFT)
+  
+  startDate       DateTime
+  endDate         DateTime?
+  
+  rentValue       Float?
+  saleValue       Float?
+  
+  terms           String          @db.Text
+  
+  documentUrl     String?
+  
+  property        Property        @relation(fields: [propertyId], references: [id])
+  client          User            @relation("ClientContracts", fields: [clientId], references: [id])
+  payments        Payment[]
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([propertyId])
+  @@index([clientId])
+  @@index([status])
+  @@index([startDate])
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  contractId  String
+  userId      String
+  
+  amount      Float
+  dueDate     DateTime
+  paidDate    DateTime?
+  
+  status      PaymentStatus @default(PENDING)
+  
+  stripePaymentIntentId String?
+  stripeInvoiceId       String?
+  
+  contract    Contract      @relation(fields: [contractId], references: [id])
+  user        User          @relation(fields: [userId], references: [id])
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([contractId])
+  @@index([userId])
+  @@index([status])
+  @@index([dueDate])
+}

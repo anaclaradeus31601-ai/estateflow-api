@@ -1,0 +1,14 @@
+
+POST http://localhost:3000/owner
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "phone": "123456789",
+  "cpfCnpj": "12345678901",
+  "address": "123 Main St"
+}
+
+###
+GET http://localhost:3000/owner
