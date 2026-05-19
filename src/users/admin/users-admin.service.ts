@@ -3,7 +3,7 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { EmailAlreadyExistsException } from 'src/commom/exceptions/email-already-exists.exception';
+import { EmailAlreadyExistsException } from 'src/common/exceptions';
 
 @Injectable()
 export class UsersAdminService {

@@ -1,19 +1,24 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateOwnerDto } from '../dto/create-owner.dto';
 import { UpdateOwnerDto } from '../dto/update-owner.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import {
+  CpfCnpjAlreadyExistsException,
+  EmailAlreadyExistsException,
+  EntityNotFoundException,
+} from 'src/common/exceptions';
 
 @Injectable()
 export class OwnerAdminService {
   constructor(private prisma: PrismaService) {}
-  
+
   async create(createOwnerDto: CreateOwnerDto) {
     const ownerExists = await this.prisma.owner.findUnique({
       where: { email: createOwnerDto.email },
     });
 
     if (ownerExists) {
-      throw new UnauthorizedException('Owner with this email already exists');
+      throw new EmailAlreadyExistsException();
     }
 
     const cnpjExists = await this.prisma.owner.findUnique({
@@ -21,7 +26,7 @@ export class OwnerAdminService {
     });
 
     if (cnpjExists) {
-      throw new UnauthorizedException('Owner with this CPF/CNPJ already exists');
+      throw new CpfCnpjAlreadyExistsException();
     }
 
     return this.prisma.owner.create({
@@ -37,7 +42,7 @@ export class OwnerAdminService {
         name: true,
         email: true,
         phone: true,
-        cpfCnpj: true,      
+        cpfCnpj: true,
       },
     });
   }
@@ -48,7 +53,7 @@ export class OwnerAdminService {
     });
 
     if (!ownerExists) {
-      throw new UnauthorizedException('Owner not found');
+      throw new EntityNotFoundException('Proprietário', id);
     }
 
     return this.prisma.owner.update({
@@ -64,7 +69,7 @@ export class OwnerAdminService {
         name: true,
         email: true,
         phone: true,
-        cpfCnpj: true,      
+        cpfCnpj: true,
       },
     });
   }
@@ -75,8 +80,9 @@ export class OwnerAdminService {
     });
 
     if (!ownerExists) {
-      throw new UnauthorizedException('Owner not found');
+      throw new EntityNotFoundException('Proprietário', id);
     }
+
     return this.prisma.owner.delete({
       where: { id },
     });

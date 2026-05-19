@@ -1,36 +1,45 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsEnum } from 'class-validator';
 import { VisitStatus } from '@prisma/client';
 
 export class CreateVisitDto {
-    @IsString()
-    @IsNotEmpty()  
-    propertyId!: string
+  @ApiProperty({ example: 'clxxxxxxxxxxxxxxxx' })
+  @IsString()
+  @IsNotEmpty()
+  propertyId!: string;
 
-    @IsString()
-    @IsNotEmpty()
-    clientId!: string
+  @ApiProperty({ example: 'clxxxxxxxxxxxxxxxx' })
+  @IsString()
+  @IsNotEmpty()
+  clientId!: string;
 
-    @IsString()
-    @IsNotEmpty()
-    realtorId!: string
+  @ApiProperty({ example: 'clxxxxxxxxxxxxxxxx' })
+  @IsString()
+  @IsNotEmpty()
+  realtorId!: string;
 
-    @IsString()
-    @IsNotEmpty()
-    scheduledAt!: string
+  @ApiProperty({ example: '2026-05-20T14:00:00.000Z' })
+  @IsString()
+  @IsNotEmpty()
+  scheduledAt!: string;
 
-    @IsNumber()
-    @IsNotEmpty()
-    duration!:   number   
-    
-    @IsString()
-    @IsNotEmpty()
-    status!:      VisitStatus
+  @ApiProperty({ example: 60, description: 'Duração em minutos' })
+  @IsNumber()
+  @IsNotEmpty()
+  duration!: number;
 
-    @IsString()
-    @IsOptional()
-    notes!:       string    
-    
-    @IsString()
-    @IsOptional()
-    feedback!:    string
+  @ApiProperty({ enum: VisitStatus, example: VisitStatus.SCHEDULED })
+  @IsEnum(VisitStatus)
+  @IsNotEmpty()
+  status!: VisitStatus;
+
+  @ApiPropertyOptional({ example: 'Cliente prefere visita pela manhã' })
+  @IsString()
+  @IsOptional()
+  notes?: string;
+
+  @ApiPropertyOptional({ example: 'Gostou do imóvel' })
+  @IsString()
+  @IsOptional()
+  feedback?: string;
 }

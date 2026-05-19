@@ -9,6 +9,7 @@ import { UpdatePropertyDto } from '../dto/update-property.dto';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PropertyStatus, PropertyType } from '@prisma/client';
+import { InvalidPriceRangeException } from 'src/common/exceptions';
 
 @Injectable()
 export class AdminPropertyService {
@@ -212,7 +213,7 @@ export class AdminPropertyService {
   const max = Number(maxPrice);
 
   if (isNaN(min) || isNaN(max)) {
-    throw new Error('Invalid price range');
+    throw new InvalidPriceRangeException();
   }
 
   return this.prisma.property.findMany({

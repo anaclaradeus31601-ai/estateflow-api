@@ -1,7 +1,11 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreatePropertyamenityDto } from '../dto/create-propertyamenity.dto';
 import { UpdatePropertyamenityDto } from '../dto/update-propertyamenity.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import {
+  EntityAlreadyExistsException,
+  EntityNotFoundException,
+} from 'src/common/exceptions';
 
 @Injectable()
 export class PropertyamenityAdminService {
@@ -16,7 +20,9 @@ export class PropertyamenityAdminService {
     });
 
     if (propertyAmenityExists) {
-      throw new UnauthorizedException('This property already has this amenity');
+      throw new EntityAlreadyExistsException(
+        'Este imóvel já possui esta comodidade',
+      );
     }
 
     return this.prisma.propertyAmenity.create({
@@ -24,27 +30,28 @@ export class PropertyamenityAdminService {
     });
   }
 
-  update(id: string, updatePropertyamenityDto: UpdatePropertyamenityDto) {
-    const propertyAmenityExists = this.prisma.propertyAmenity.findUnique({
+  async update(id: string, updatePropertyamenityDto: UpdatePropertyamenityDto) {
+    const propertyAmenityExists = await this.prisma.propertyAmenity.findUnique({
       where: { id },
     });
 
     if (!propertyAmenityExists) {
-      throw new UnauthorizedException('This property amenity does not exist');
+      throw new EntityNotFoundException('Comodidade do imóvel', id);
     }
+
     return this.prisma.propertyAmenity.update({
       where: { id },
       data: updatePropertyamenityDto,
     });
   }
 
-  remove(id: string) {
-    const propertyAmenityExists = this.prisma.propertyAmenity.findUnique({
+  async remove(id: string) {
+    const propertyAmenityExists = await this.prisma.propertyAmenity.findUnique({
       where: { id },
     });
 
     if (!propertyAmenityExists) {
-      throw new UnauthorizedException('This property amenity does not exist');
+      throw new EntityNotFoundException('Comodidade do imóvel', id);
     }
 
     return this.prisma.propertyAmenity.delete({

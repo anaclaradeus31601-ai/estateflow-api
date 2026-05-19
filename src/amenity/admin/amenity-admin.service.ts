@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { CreateAmenityDto } from '../dto/create-amenity.dto';
 import { UpdateAmenityDto } from '../dto/update-amenity.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import {
+  EntityAlreadyExistsException,
+  EntityNotFoundException,
+} from 'src/common/exceptions';
 
 @Injectable()
 export class AmenityAdminService {
@@ -13,31 +17,36 @@ export class AmenityAdminService {
     });
 
     if (amenityExists) {
-      throw new Error('Amenity already exists');
+      throw new EntityAlreadyExistsException('Comodidade já cadastrada');
     }
 
     return this.prisma.amenity.create({ data: createAmenityDto });
   }
 
-  update(id: string, updateAmenityDto: UpdateAmenityDto) {
-    const amenityExists = this.prisma.amenity.findUnique({
+  async update(id: string, updateAmenityDto: UpdateAmenityDto) {
+    const amenityExists = await this.prisma.amenity.findUnique({
       where: { id },
     });
 
     if (!amenityExists) {
-      throw new Error('Amenity not found');
+      throw new EntityNotFoundException('Comodidade', id);
     }
-    return this.prisma.amenity.update({ where: { id }, data: updateAmenityDto });
+
+    return this.prisma.amenity.update({
+      where: { id },
+      data: updateAmenityDto,
+    });
   }
 
-  remove(id: string) {
-    const amenityExists = this.prisma.amenity.findUnique({
+  async remove(id: string) {
+    const amenityExists = await this.prisma.amenity.findUnique({
       where: { id },
     });
 
     if (!amenityExists) {
-      throw new Error('Amenity not found');
+      throw new EntityNotFoundException('Comodidade', id);
     }
+
     return this.prisma.amenity.delete({ where: { id } });
   }
 }

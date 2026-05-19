@@ -2,25 +2,27 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { UnknownExceptionFilter } from './common/filters';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.useGlobalFilters(new UnknownExceptionFilter());
+
   app.useGlobalPipes(
     new ValidationPipe({
-      transform:true,
-      whitelist:true,
-      forbidNonWhitelisted:true,
-    })
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
   );
   
   const config = new DocumentBuilder()
-  .setTitle('EstateFlow API')
-  .setDescription('API for real estate management')
-  .setVersion('1.0')
-  .addTag('estateflow')
-  .addBearerAuth()
-  .build(); 
+    .setTitle('EstateFlow API')
+    .setDescription('API para gestão imobiliária')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build(); 
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);

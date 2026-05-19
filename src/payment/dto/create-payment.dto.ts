@@ -1,35 +1,45 @@
-import { PaymentStatus } from "@prisma/client"
-import { IsDateString, IsEnum, IsNotEmpty, IsNumber, IsOptional, isString, IsString } from "class-validator"
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { PaymentStatus } from '@prisma/client';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreatePaymentDto {
-    @IsNotEmpty()
-    @IsString()
-    contractId!:  string
+  @ApiProperty({ example: 'clxxxxxxxxxxxxxxxx' })
+  @IsNotEmpty()
+  @IsString()
+  contractId!: string;
 
-    @IsNotEmpty()
-    @IsString()
-    userId!:      string
+  @ApiProperty({ example: 'clxxxxxxxxxxxxxxxx' })
+  @IsNotEmpty()
+  @IsString()
+  userId!: string;
 
-    @IsNotEmpty()  
-    @IsNumber()
-    amount!:      number
+  @ApiProperty({ example: 3500 })
+  @IsNotEmpty()
+  @IsNumber()
+  amount!: number;
 
-    @IsNotEmpty()
-    @IsString()
-    dueDate!:     string
+  @ApiProperty({ example: '2026-05-10' })
+  @IsNotEmpty()
+  @IsString()
+  dueDate!: string;
 
-    @IsNotEmpty()
-    @IsString()
-    paidDate!:    string
+  @ApiProperty({ example: '2026-05-09' })
+  @IsNotEmpty()
+  @IsString()
+  paidDate!: string;
 
-    @IsNotEmpty()
-    @IsEnum(PaymentStatus)
-    status!:      PaymentStatus
-    //como eu não vou usar o stripe, vou deixar o stripePaymentIntentId e stripeInvoiceId opicionais
-    @IsOptional()
-    @IsString()
-    stripePaymentIntentId!: string
-    @IsOptional()
-    @IsString()
-    stripeInvoiceId!:       string
+  @ApiProperty({ enum: PaymentStatus, example: PaymentStatus.PENDING })
+  @IsNotEmpty()
+  @IsEnum(PaymentStatus)
+  status!: PaymentStatus;
+
+  @ApiPropertyOptional({ example: 'pi_xxxxxxxx' })
+  @IsOptional()
+  @IsString()
+  stripePaymentIntentId?: string;
+
+  @ApiPropertyOptional({ example: 'in_xxxxxxxx' })
+  @IsOptional()
+  @IsString()
+  stripeInvoiceId?: string;
 }

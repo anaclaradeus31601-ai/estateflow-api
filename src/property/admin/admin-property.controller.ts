@@ -1,83 +1,62 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseFloatPipe, Query, } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseFloatPipe,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AdminPropertyService } from './admin-property.service';
 import { CreatePropertyDto } from '../dto/create-property.dto';
 import { UpdatePropertyDto } from '../dto/update-property.dto';
-import { PropertyStatus, PropertyType } from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/guard/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
 
-
+@ApiTags('admin/property')
+@ApiBearerAuth()
 @Controller('admin/property')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class AdminPropertyController {
-  constructor(private readonly propertyService: AdminPropertyService) { }
+  constructor(private readonly propertyService: AdminPropertyService) {}
 
   @Post()
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Criar imóvel' })
+  @ApiResponse({ status: 201, description: 'Imóvel criado' })
   create(@Body() createPropertyDto: CreatePropertyDto) {
     return this.propertyService.create(createPropertyDto);
   }
 
-  @Get()
-  findAll() {
-    return this.propertyService.findAll();
-  }
-
-  @Get('available')
-  findAvailablePropertiesController() {
-    return this.propertyService.findAvailableProperties();
-  }
-
-  @Get('type/:type')
-  findPropertiesByType(@Param('type') type: PropertyType) {
-    return this.propertyService.findPropertiesByType(type);
-  }
-
-  @Get('owner/:ownerId')
-  findPropertiesByOwner(@Param('ownerId') ownerId: string) {
-    return this.propertyService.findPropertiesByOwner(ownerId);
-  }
-
-  @Get('realtor/:realtorId')
-  findPropertiesByRealtor(@Param('realtorId') realtorId: string) {
-    return this.propertyService.findPropertiesByRealtor(realtorId);
-  }
-
-  @Get('featured')
-  findFeaturedProperties() {
-    return this.propertyService.findFeaturedProperties();
-  }
-
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.propertyService.findOne(id);
-  }
-
-  @Get('price/:minPrice/:maxPrice')
-  findPropertiesByPriceRange(
-    @Param('minPrice', ParseFloatPipe) minPrice: number,
-    @Param('maxPrice', ParseFloatPipe) maxPrice: number,
-  ) {
-    return this.propertyService.findPropertiesByPriceRange(
-      minPrice,
-      maxPrice,
-    );
-  }
-
-  @Get('status/:status')
-  findPropertiesByStatus(@Param('status') status: PropertyStatus) {
-    return this.propertyService.findPropertiesByStatus(status);
-  }
-
-
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePropertyDto: UpdatePropertyDto) {
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Atualizar imóvel' })
+  @ApiParam({ name: 'id', description: 'ID do imóvel' })
+  @ApiResponse({ status: 200, description: 'Imóvel atualizado' })
+  update(
+    @Param('id') id: string,
+    @Body() updatePropertyDto: UpdatePropertyDto,
+  ) {
     return this.propertyService.update(id, updatePropertyDto);
   }
 
   @Delete(':id')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Remover imóvel' })
+  @ApiParam({ name: 'id', description: 'ID do imóvel' })
+  @ApiResponse({ status: 200, description: 'Imóvel removido' })
   remove(@Param('id') id: string) {
     return this.propertyService.remove(id);
   }
-
-
-
-
 }

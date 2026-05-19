@@ -1,15 +1,19 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateAmenityDto {
-    @IsNotEmpty()
-    @IsString()
-    name!:      string
+  @ApiProperty({ example: 'Piscina' })
+  @IsNotEmpty()
+  @IsString()
+  name!: string;
 
-    @IsNotEmpty()
-    @IsString()
-    icon!:        string
+  @ApiProperty({ example: 'pool' })
+  @IsNotEmpty()
+  @IsString()
+  icon!: string;
 
-    @IsNotEmpty()
-    @IsString()
-    category!: string
+  @ApiProperty({ example: 'lazer' })
+  @IsNotEmpty()
+  @IsString()
+  category!: string;
 }

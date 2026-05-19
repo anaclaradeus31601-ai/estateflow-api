@@ -1,12 +1,12 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class SeedService implements OnModuleInit {
+export class SeedService implements OnApplicationBootstrap {
     constructor(private prisma: PrismaService) { }
 
-    async onModuleInit() {
+    async onApplicationBootstrap() {    
         console.log('🌱 Iniciando seed...');
 
         await this.deleteAll();
@@ -61,7 +61,7 @@ export class SeedService implements OnModuleInit {
                     id: '4',
                     name: 'Admin',
                     email: 'admin@example.com',
-                    password,
+                    password: await bcrypt.hash('admin123', 10),
                     role: 'ADMIN',
                 },
                 {
@@ -219,20 +219,6 @@ export class SeedService implements OnModuleInit {
                 },
             ],
         });
-
-        // SESSIONS
-        await this.prisma.session.createMany({
-            data: [
-                {
-                    id: '1',
-                    userId: '1',
-                    refreshToken: 'refresh-token',
-                    ip: '127.0.0.1',
-                    userAgent: 'Chrome',
-                    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                },
-            ],
-        });
         //amenity property
         // PROPERTY AMENITIES
         await this.prisma.propertyAmenity.createMany({
@@ -247,7 +233,12 @@ export class SeedService implements OnModuleInit {
                 },
             ],
         });
-
+        const users = await this.prisma.user.findMany({
+            where: {
+                role: 'ADMIN',
+            },
+        });
+        console.log('Admins:', JSON.stringify(users, null, 2));
         console.log('🌱 Dados criados');
     }
-}
+}   
