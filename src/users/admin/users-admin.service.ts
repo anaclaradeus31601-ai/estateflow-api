@@ -1,21 +1,21 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Injectable } from '@nestjs/common';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { EmailAlreadyExistsException } from 'src/commom/exceptions/email-already-exists.exception';
+
 @Injectable()
-export class UsersService {
+export class UsersAdminService {
   constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto) {
-
-
     const existingUser = await this.prisma.user.findUnique({
       where: { email: createUserDto.email },
     });
 
     if (existingUser) {
-      throw new UnauthorizedException('Email already in use');
+      throw new EmailAlreadyExistsException();
     }
 
     return this.prisma.user.create({
@@ -45,24 +45,12 @@ export class UsersService {
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-      },
-    });
-  }
-
   async update(id: string, updateUserDto: UpdateUserDto) {
-      if (updateUserDto.password) {
-        updateUserDto.password = bcrypt.hashSync(updateUserDto.password, 10);
-      } else {
-        delete updateUserDto.password; // Remove password field if not provided
-      }
+    if (updateUserDto.password) {
+      updateUserDto.password = bcrypt.hashSync(updateUserDto.password, 10);
+    } else {
+      delete updateUserDto.password;
+    }
 
     return this.prisma.user.update({
       where: { id },
@@ -74,6 +62,7 @@ export class UsersService {
         name: true,
         email: true,
         role: true,
+        avatar: true,
       },
     });
   }

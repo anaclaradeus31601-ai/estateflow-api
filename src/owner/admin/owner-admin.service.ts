@@ -1,13 +1,13 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { CreateOwnerDto } from './dto/create-owner.dto';
-import { UpdateOwnerDto } from './dto/update-owner.dto';
+import { CreateOwnerDto } from '../dto/create-owner.dto';
+import { UpdateOwnerDto } from '../dto/update-owner.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class OwnerService {
+export class OwnerAdminService {
   constructor(private prisma: PrismaService) {}
+  
   async create(createOwnerDto: CreateOwnerDto) {
-
     const ownerExists = await this.prisma.owner.findUnique({
       where: { email: createOwnerDto.email },
     });
@@ -42,33 +42,7 @@ export class OwnerService {
     });
   }
 
-  findAll() {
-    return this.prisma.owner.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        cpfCnpj: true,      
-      },
-    });
-  }
-
-  findOne(id: string) {
-    return this.prisma.owner.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        cpfCnpj: true,      
-      },
-    });
-  }
-
   async update(id: string, updateOwnerDto: UpdateOwnerDto) {
-
     const ownerExists = await this.prisma.owner.findUnique({
       where: { id },
     });

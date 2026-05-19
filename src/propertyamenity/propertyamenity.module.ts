@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
-import { PropertyamenityService } from './propertyamenity.service';
-import { PropertyamenityController } from './propertyamenity.controller';
+import { PropertyamenityAdminService } from './admin/propertyamenity-admin.service';
+import { PropertyamenityAdminController } from './admin/propertyamenity-admin.controller';
+import { PropertyamenityPublicService } from './propertyamenity-public.service';
+import { PropertyamenityPublicController } from './propertyamenity-public.controller';
 
 @Module({
-  controllers: [PropertyamenityController],
-  providers: [PropertyamenityService],
+  controllers: [PropertyamenityAdminController, PropertyamenityPublicController],
+  providers: [PropertyamenityAdminService, PropertyamenityPublicService],
 })
 export class PropertyamenityModule {}

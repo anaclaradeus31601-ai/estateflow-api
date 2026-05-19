@@ -4,14 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { CreatePropertyDto } from './dto/create-property.dto';
-import { UpdatePropertyDto } from './dto/update-property.dto';
+import { CreatePropertyDto } from '../dto/create-property.dto';
+import { UpdatePropertyDto } from '../dto/update-property.dto';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PropertyStatus, PropertyType } from '@prisma/client';
 
 @Injectable()
-export class PropertyService {
+export class AdminPropertyService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createPropertyDto: CreatePropertyDto) {

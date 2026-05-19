@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
-import { VisitService } from './visit.service';
-import { VisitController } from './visit.controller';
+import { VisitAdminService } from './admin/visit-admin.service';
+import { VisitAdminController } from './admin/visit-admin.controller';
+import { VisitPublicService } from './visit-public.service';
+import { VisitPublicController } from './visit-public.controller';
 
 @Module({
-  controllers: [VisitController],
-  providers: [VisitService],
+  controllers: [VisitAdminController, VisitPublicController],
+  providers: [VisitAdminService, VisitPublicService],
 })
 export class VisitModule {}

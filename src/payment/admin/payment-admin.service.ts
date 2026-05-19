@@ -1,15 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { CreatePaymentDto } from '../dto/create-payment.dto';
+import { UpdatePaymentDto } from '../dto/update-payment.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class PaymentService {
-
+export class PaymentAdminService {
   constructor(private prisma: PrismaService) {}
 
   async create(createPaymentDto: CreatePaymentDto) {
-
     const paymentExists =  await this.prisma.payment.findFirst({
       where: {
         contractId: createPaymentDto.contractId,
@@ -33,23 +31,9 @@ export class PaymentService {
         stripeInvoiceId: createPaymentDto.stripeInvoiceId,
       }
     })
-
-  }
-
-  findAll() {
-    return this.prisma.payment.findMany();
-  }
-
-  findOne(id: string) {
-    return this.prisma.payment.findUnique({
-      where: {
-        id: id,
-      }
-    });
   }
 
   update(id: string, updatePaymentDto: UpdatePaymentDto) {
-
     const paymentExists =  this.prisma.payment.findUnique({
       where: {
         id: id,
@@ -73,7 +57,6 @@ export class PaymentService {
   }
 
   remove(id: string) {
-
     const paymentExists =  this.prisma.payment.findUnique({
       where: {
         id: id,

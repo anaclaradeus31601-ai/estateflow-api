@@ -11,10 +11,11 @@ import { PropertyamenityModule } from './propertyamenity/propertyamenity.module'
 import { VisitModule } from './visit/visit.module';
 import { ContractModule } from './contract/contract.module';
 import { PaymentModule } from './payment/payment.module';
+import { SeedService } from './seed/seed.service';
 
 @Module({
   imports: [UsersModule, PrismaModule, AuthModule, OwnerModule, PropertyModule, AmenityModule, PropertyamenityModule, VisitModule, ContractModule, PaymentModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, SeedService],
 })
 export class AppModule {}

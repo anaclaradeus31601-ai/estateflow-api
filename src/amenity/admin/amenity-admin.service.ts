@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAmenityDto } from './dto/create-amenity.dto';
-import { UpdateAmenityDto } from './dto/update-amenity.dto';
+import { CreateAmenityDto } from '../dto/create-amenity.dto';
+import { UpdateAmenityDto } from '../dto/update-amenity.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class AmenityService {
+export class AmenityAdminService {
   constructor(private prisma: PrismaService) {}
 
   async create(createAmenityDto: CreateAmenityDto) {
-
     const amenityExists = await this.prisma.amenity.findFirst({
       where: { name: createAmenityDto.name },
     });
@@ -18,14 +17,6 @@ export class AmenityService {
     }
 
     return this.prisma.amenity.create({ data: createAmenityDto });
-  }
-
-  findAll() {
-    return this.prisma.amenity.findMany();
-  }
-
-  findOne(id: string) {
-    return this.prisma.amenity.findUnique({ where: { id } });
   }
 
   update(id: string, updateAmenityDto: UpdateAmenityDto) {

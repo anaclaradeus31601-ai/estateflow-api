@@ -1,58 +1,9 @@
 
-POST http://localhost:3000/property
-Content-Type: application/json
-
-{
-  "title": "Apartamento Moderno no Centro",
-  "description": "Apartamento moderno com excelente localização, próximo a mercados, farmácias e shopping.",
-  "type": "RESIDENTIAL",
-  "transactionType": "SALE",
-  "status": "AVAILABLE",
-
-  "street": "Rua das Palmeiras",
-  "number": "245",
-  "complement": "Apto 302",
-  "neighborhood": "Centro",
-  "city": "Araraquara",
-  "state": "SP",
-  "zipCode": "14800-120",
-  "country": "Brasil",
-
-  "area": 87.5,
-  "bedrooms": 3,
-  "bathrooms": 2,
-  "garages": 2,
-
-  "rentPrice": 0,
-  "salePrice": 450000,
-  "condominiumFee": 650,
-  "iptu": 120,
-
-  "images": [
-    "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
-    "https://images.unsplash.com/photo-1494526585095-c41746248156"
-  ],
-
-  "videos": [
-    "https://example.com/video-tour.mp4"
-  ],
-
-  "virtualTourUrl": "https://example.com/virtual-tour",
-
-  "latitude": -21.7944,
-  "longitude": -48.1756,
-
-  "featured": true,
-  "views": 0,
-
-  "ownerId": "cmp7q34su0000kzxddaxy4oms",
-  "realtorId": "cmp7rw7f20000kzjzf13ar2x4"
-}
 
 
 ###
 
-GET http://localhost:3000/property
+GET http://localhost:3000/admin/property
 
 ###
 
@@ -74,3 +25,4 @@ GET http://localhost:3000/property/realtor/cmp7rw7f20000kzjzf13ar2x4
 ###
 GET http://localhost:3000/property/price/1000/500000
 ###
+GET http://localhost:3000/propertyamenity

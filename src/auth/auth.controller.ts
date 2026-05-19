@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import {type AuthUser } from './types/auth-user.type';
+import { request } from 'http';
 
 @Controller('auth')
 export class AuthController {
@@ -10,7 +11,7 @@ export class AuthController {
 
   @Post('login')
   login(@Body() body: { email: string; password: string }) {
-    return this.authService.login(body.email, body.password);
+    return this.authService.login(body.email, body.password, request);
   }
 
   @Post('refresh')

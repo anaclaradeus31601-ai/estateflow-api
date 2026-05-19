@@ -1,22 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseFloatPipe, Query, } from '@nestjs/common';
-import { PropertyService } from './property.service';
-import { CreatePropertyDto } from './dto/create-property.dto';
-import { UpdatePropertyDto } from './dto/update-property.dto';
+import { Controller, Get, Param, ParseFloatPipe } from '@nestjs/common';
+import { PropertyService } from './public-property.service';
 import { PropertyStatus, PropertyType } from '@prisma/client';
+import { title } from 'process';
 
 
 @Controller('property')
 export class PropertyController {
   constructor(private readonly propertyService: PropertyService) { }
 
-  @Post()
-  create(@Body() createPropertyDto: CreatePropertyDto) {
-    return this.propertyService.create(createPropertyDto);
-  }
-
   @Get()
-  findAll() {
-    return this.propertyService.findAll();
+  findAll(dto: {title?: string, page?: number, limit?: number}) {
+    return this.propertyService.findAll(dto);
   }
 
   @Get('available')
@@ -66,16 +60,6 @@ export class PropertyController {
     return this.propertyService.findPropertiesByStatus(status);
   }
 
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePropertyDto: UpdatePropertyDto) {
-    return this.propertyService.update(id, updatePropertyDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.propertyService.remove(id);
-  }
 
 
 

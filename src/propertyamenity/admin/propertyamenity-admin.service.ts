@@ -1,11 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { CreatePropertyamenityDto } from './dto/create-propertyamenity.dto';
-import { UpdatePropertyamenityDto } from './dto/update-propertyamenity.dto';
+import { CreatePropertyamenityDto } from '../dto/create-propertyamenity.dto';
+import { UpdatePropertyamenityDto } from '../dto/update-propertyamenity.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class PropertyamenityService {
-
+export class PropertyamenityAdminService {
   constructor(private prisma: PrismaService) {}
 
   async create(createPropertyamenityDto: CreatePropertyamenityDto) {
@@ -22,16 +21,6 @@ export class PropertyamenityService {
 
     return this.prisma.propertyAmenity.create({
       data: createPropertyamenityDto,
-    });
-  }
-
-  findAll() {
-    return this.prisma.propertyAmenity.findMany();
-  }
-
-  findOne(id: string) {
-    return this.prisma.propertyAmenity.findUnique({
-      where: { id },
     });
   }
 

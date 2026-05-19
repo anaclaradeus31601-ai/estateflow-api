@@ -45,9 +45,7 @@ export class AuthService {
     });
 
     // 🌐 IP + USER AGENT (CORRIGIDO)
-    const ip =
-      (request.headers['x-forwarded-for'] as string) ||
-      request.socket?.remoteAddress;
+    const ip = (request.headers['x-forwarded-for'] as string) || request.socket?.remoteAddress;
 
     const userAgent = request.headers['user-agent'];
 
