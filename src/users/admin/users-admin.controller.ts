@@ -31,7 +31,6 @@ export class UsersAdminController {
   constructor(private readonly usersService: UsersAdminService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Criar usuário' })
   @ApiResponse({ status: 201, description: 'Usuário criado' })
   @ApiResponse({ status: 401, description: 'Não autenticado' })

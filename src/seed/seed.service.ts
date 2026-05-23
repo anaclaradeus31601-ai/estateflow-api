@@ -38,9 +38,9 @@ export class SeedService implements OnApplicationBootstrap {
             data: [
                 {
                     id: '1',
-                    name: 'realtor 1',
-                    email: 'xcc@example.com',
-                    password,
+                    name: 'Ana Realtor',
+                    email: 'anarealtor@example.com',
+                    password: await bcrypt.hash('123456', 10),
                     role: 'REALTOR',
                 },
                 {
