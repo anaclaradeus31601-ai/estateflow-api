@@ -1,11 +1,34 @@
-import {
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { randomUUID } from 'crypto';
+import type { Request } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { AuthUser } from './types/auth-user.type';
+
+type LoginRequest = Request & {
+  headers: Request['headers'] & {
+    'x-forwarded-for'?: string | string[];
+    'user-agent'?: string | string[];
+  };
+};
+
+function getRequestHeader(
+  request: LoginRequest,
+  name: 'x-forwarded-for' | 'user-agent',
+): string | null {
+  const value = request.headers[name];
+
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value[0] ?? null;
+  }
+
+  return null;
+}
 
 @Injectable()
 export class AuthService {
@@ -14,12 +37,22 @@ export class AuthService {
     private prisma: PrismaService,
   ) {}
 
+  private signAccessToken(payload: AuthUser) {
+    return this.jwtService.sign(payload, {
+      expiresIn: '15m',
+      jwtid: randomUUID(),
+    });
+  }
+
+  private signRefreshToken(payload: AuthUser) {
+    return this.jwtService.sign(payload, {
+      expiresIn: '7d',
+      jwtid: randomUUID(),
+    });
+  }
+
   // 🔐 LOGIN
-  async login(
-    email: string,
-    password: string,
-    request: any, // 👈 necessário para IP e user-agent
-  ) {
+  async login(email: string, password: string, request: LoginRequest) {
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
@@ -36,26 +69,24 @@ export class AuthService {
       name: user.name,
     };
 
-    const accessToken = this.jwtService.sign(payload, {
-      expiresIn: '15m',
-    });
-
-    const refreshToken = this.jwtService.sign(payload, {
-      expiresIn: '7d',
-    });
+    const accessToken = this.signAccessToken(payload);
+    const refreshToken = this.signRefreshToken(payload);
 
     // 🌐 IP + USER AGENT (CORRIGIDO)
-    const ip = (request.headers['x-forwarded-for'] as string) || request.socket?.remoteAddress;
+    const ip =
+      getRequestHeader(request, 'x-forwarded-for') ??
+      request.socket?.remoteAddress ??
+      null;
 
-    const userAgent = request.headers['user-agent'];
+    const userAgent = getRequestHeader(request, 'user-agent');
 
     // 🧠 SESSION (SaaS STYLE)
     await this.prisma.session.create({
       data: {
         userId: user.id,
         refreshToken,
-        ip: ip || null,
-        userAgent: userAgent || null,
+        ip,
+        userAgent,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
     });
@@ -67,7 +98,7 @@ export class AuthService {
   }
 
   // 🔁 REFRESH TOKEN ROTATION SAFE
-  async refresh(refreshToken: string) {
+  async refresh(refreshToken?: string) {
     if (!refreshToken) {
       throw new UnauthorizedException('No refresh token');
     }
@@ -107,13 +138,8 @@ export class AuthService {
       name: user.name,
     };
 
-    const newAccessToken = this.jwtService.sign(newPayload, {
-      expiresIn: '15m',
-    });
-
-    const newRefreshToken = this.jwtService.sign(newPayload, {
-      expiresIn: '7d',
-    });
+    const newAccessToken = this.signAccessToken(newPayload);
+    const newRefreshToken = this.signRefreshToken(newPayload);
 
     // 🔄 atualiza session (ROTATION SEGURA)
     await this.prisma.session.update({

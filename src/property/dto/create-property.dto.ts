@@ -1,8 +1,4 @@
-import {
-  PropertyStatus,
-  TransactionType,
-  PropertyType,
-} from '@prisma/client';
+import { PropertyStatus, TransactionType, PropertyType } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
@@ -125,13 +121,19 @@ export class CreatePropertyDto {
   @IsNumber()
   iptu?: number;
 
-  @ApiPropertyOptional({ type: [String], example: ['https://example.com/img1.jpg'] })
+  @ApiPropertyOptional({
+    type: [String],
+    example: ['https://example.com/img1.jpg'],
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   images?: string[];
 
-  @ApiPropertyOptional({ type: [String], example: ['https://example.com/video1.mp4'] })
+  @ApiPropertyOptional({
+    type: [String],
+    example: ['https://example.com/video1.mp4'],
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

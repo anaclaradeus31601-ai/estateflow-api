@@ -79,6 +79,7 @@ model User {
   payments            Payment[]
   visitsAsRealtor Visit[] @relation("RealtorVisits")
   sessions Session[]
+  auditLogs AuditLog[]
 
   @@index([email])
   @@index([role])
@@ -98,6 +99,33 @@ model Session {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   expiresAt     DateTime
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  actorId        String?
+  actor          User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorName      String
+  actorEmail     String
+  actorRole      UserRole
+  action         String
+  resource       String
+  resourceId     String?
+  method         String
+  path           String
+  requestBody    Json?
+  requestParams  Json?
+  requestQuery   Json?
+  responseStatus Int
+  ip             String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+
+  @@index([actorId])
+  @@index([actorRole])
+  @@index([resource])
+  @@index([action])
+  @@index([createdAt])
 }
 
 

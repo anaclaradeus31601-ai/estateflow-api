@@ -1,10 +1,9 @@
-import {
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PropertyStatus, PropertyType } from '@prisma/client';
 import { InvalidPriceRangeException } from 'src/common/exceptions';
+import { FindPropertiesQueryDto } from './dto/find-properties-query.dto';
 
 @Injectable()
 export class PropertyService {
@@ -22,26 +21,48 @@ export class PropertyService {
     });
   }
 
-  async findAll(dto: {title?: string, page?: number, limit?: number}) {
-    const {title, page = 1, limit = 15} = dto;
-    return this.prisma.property.findMany({
-      ...(title && {
-        where: {
-          title: {
-            contains: title,
-            mode: 'insensitive',
-          },
-        },
-      }), 
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        owner: true,
-        realtor: true,
-      },
-    })  
-  }
+  async findAll(dto: FindPropertiesQueryDto) {
+  const {
+    search,
+    page = 1,
+    limit = 15,
+  } = dto;
 
+  return this.prisma.property.findMany({
+    where: search
+      ? {
+          OR: [
+            {
+              title: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+            {
+              city: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+            {
+              neighborhood: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+          ],
+        }
+      : undefined,
+
+    skip: (page - 1) * limit,
+    take: limit,
+
+    include: {
+      owner: true,
+      realtor: true,
+    },
+  });
+}
   async findAvailableProperties() {
     return this.prisma.property.findMany({
       where: {
@@ -90,10 +111,7 @@ export class PropertyService {
     });
   }
 
-  async findPropertiesByPriceRange(
-    minPrice: number,
-    maxPrice: number,
-  ) {
+  async findPropertiesByPriceRange(minPrice: number, maxPrice: number) {
     const min = Number(minPrice);
     const max = Number(maxPrice);
 

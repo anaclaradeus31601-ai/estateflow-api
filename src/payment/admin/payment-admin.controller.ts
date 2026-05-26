@@ -42,10 +42,7 @@ export class PaymentAdminController {
   @ApiOperation({ summary: 'Atualizar pagamento' })
   @ApiParam({ name: 'id', description: 'ID do pagamento' })
   @ApiResponse({ status: 200, description: 'Pagamento atualizado' })
-  update(
-    @Param('id') id: string,
-    @Body() updatePaymentDto: UpdatePaymentDto,
-  ) {
+  update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
     return this.paymentService.update(id, updatePaymentDto);
   }
 

@@ -67,6 +67,22 @@ export class UsersAdminService {
     });
   }
 
+  async updateAvatar(id: string, avatar: string) {
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        avatar,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatar: true,
+      },
+    });
+  }
+
   remove(id: string) {
     return this.prisma.user.delete({
       where: { id },

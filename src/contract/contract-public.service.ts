@@ -12,8 +12,8 @@ export class ContractPublicService {
   findOne(id: string) {
     return this.prisma.contract.findUnique({
       where: {
-        id
-      }
+        id,
+      },
     });
   }
 
@@ -59,22 +59,22 @@ export class ContractPublicService {
   async findContractsByClient(clientId: string) {
     return this.prisma.contract.findMany({
       where: {
-        clientId
+        clientId,
       },
       include: {
         property: true,
-      }
+      },
     });
   }
 
   async findContractsByProperty(propertyId: string) {
     return this.prisma.contract.findMany({
       where: {
-        propertyId
+        propertyId,
       },
       include: {
         client: true,
-      }
+      },
     });
   }
 }

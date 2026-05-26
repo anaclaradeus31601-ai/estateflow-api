@@ -144,6 +144,24 @@ export class AdminPropertyService {
     });
   }
 
+  async addImages(id: string, imagePaths: string[]) {
+    const propertyExists = await this.prisma.property.findUnique({
+      where: { id },
+      select: { images: true },
+    });
+
+    if (!propertyExists) {
+      throw new NotFoundException('Property not found');
+    }
+
+    return this.prisma.property.update({
+      where: { id },
+      data: {
+        images: [...propertyExists.images, ...imagePaths],
+      },
+    });
+  }
+
   async remove(id: string) {
     const propertyExists = await this.prisma.property.findUnique({
       where: { id },
@@ -158,7 +176,7 @@ export class AdminPropertyService {
     });
   }
 
-  async findAvailableProperties(){
+  async findAvailableProperties() {
     return this.prisma.property.findMany({
       where: {
         status: 'AVAILABLE',
@@ -205,34 +223,31 @@ export class AdminPropertyService {
     });
   }
 
-  async findPropertiesByPriceRange(
-  minPrice: number,
-  maxPrice: number,
-) {
-  const min = Number(minPrice);
-  const max = Number(maxPrice);
+  async findPropertiesByPriceRange(minPrice: number, maxPrice: number) {
+    const min = Number(minPrice);
+    const max = Number(maxPrice);
 
-  if (isNaN(min) || isNaN(max)) {
-    throw new InvalidPriceRangeException();
+    if (isNaN(min) || isNaN(max)) {
+      throw new InvalidPriceRangeException();
+    }
+
+    return this.prisma.property.findMany({
+      where: {
+        OR: [
+          {
+            rentPrice: {
+              gte: min,
+              lte: max,
+            },
+          },
+          {
+            salePrice: {
+              gte: min,
+              lte: max,
+            },
+          },
+        ],
+      },
+    });
   }
-
-  return this.prisma.property.findMany({
-    where: {
-      OR: [
-        {
-          rentPrice: {
-            gte: min,
-            lte: max,
-          },
-        },
-        {
-          salePrice: {
-            gte: min,
-            lte: max,
-          },
-        },
-      ],
-    },
-  });
-}
 }

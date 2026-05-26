@@ -1,11 +1,42 @@
 import { Injectable } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { EmailAlreadyExistsException } from 'src/common/exceptions';
+import { PublicRegisterUserDto } from './dto/public-register-user.dto';
 
 @Injectable()
 export class UsersPublicService {
   constructor(private prisma: PrismaService) {}
+
+  async register(publicRegisterUserDto: PublicRegisterUserDto) {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: publicRegisterUserDto.email },
+    });
+
+    if (existingUser) {
+      throw new EmailAlreadyExistsException();
+    }
+
+    return this.prisma.user.create({
+      data: {
+        name: publicRegisterUserDto.name,
+        email: publicRegisterUserDto.email,
+        phone: publicRegisterUserDto.phone || null,
+        password: bcrypt.hashSync(publicRegisterUserDto.password, 10),
+        role: UserRole.CLIENT,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        avatar: true,
+      },
+    });
+  }
 
   findOne(id: string) {
     return this.prisma.user.findUnique({
@@ -14,6 +45,7 @@ export class UsersPublicService {
         id: true,
         name: true,
         email: true,
+        phone: true,
         role: true,
         avatar: true,
       },
@@ -36,6 +68,24 @@ export class UsersPublicService {
         id: true,
         name: true,
         email: true,
+        phone: true,
+        role: true,
+        avatar: true,
+      },
+    });
+  }
+
+  async updateAvatar(id: string, avatar: string) {
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        avatar,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
         role: true,
         avatar: true,
       },

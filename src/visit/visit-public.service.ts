@@ -17,7 +17,7 @@ export class VisitPublicService {
     });
   }
 
-  async findTodayVisits(){
+  async findTodayVisits() {
     const today = new Date();
 
     return this.prisma.contract.findMany({
@@ -33,48 +33,48 @@ export class VisitPublicService {
     });
   }
 
-  async findVisitsByRealtor(realtorId: string){
+  async findVisitsByRealtor(realtorId: string) {
     return this.prisma.visit.findMany({
       where: {
-        status: "SCHEDULED",
+        status: 'SCHEDULED',
         realtorId: realtorId,
       },
       include: {
-        realtor: true
-      }
+        realtor: true,
+      },
     });
   }
 
-  async findVisitsByClient(clientId: string){
+  async findVisitsByClient(clientId: string) {
     return this.prisma.visit.findMany({
       where: {
-        status: "SCHEDULED",
+        status: 'SCHEDULED',
         clientId: clientId,
       },
       include: {
-        client: true
-      }
+        client: true,
+      },
     });
   }
 
-  async findVisitsByProperty(propertyId: string){
+  async findVisitsByProperty(propertyId: string) {
     return this.prisma.visit.findMany({
       where: {
-        status: "SCHEDULED",
+        status: 'SCHEDULED',
         propertyId: propertyId,
       },
       include: {
-        property: true
-      }
+        property: true,
+      },
     });
   }
 
-  async findVisitsByDate(date: Date){
+  async findVisitsByDate(date: Date) {
     return this.prisma.visit.findMany({
       where: {
         scheduledAt: date,
-        status: "SCHEDULED",
+        status: 'SCHEDULED',
       },
     });
-  } 
+  }
 }

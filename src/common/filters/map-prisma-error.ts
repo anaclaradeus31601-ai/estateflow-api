@@ -29,7 +29,9 @@ const PRISMA_ERROR_MAP: Record<string, PrismaErrorMapping> = {
   },
 };
 
-function getUniqueFieldMessage(meta: PrismaClientKnownRequestError['meta']): string {
+function getUniqueFieldMessage(
+  meta: PrismaClientKnownRequestError['meta'],
+): string {
   const target = meta?.target;
   if (Array.isArray(target) && target.length > 0) {
     return `Registro duplicado: ${target.join(', ')} já existe`;

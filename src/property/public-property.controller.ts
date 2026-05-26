@@ -1,11 +1,5 @@
 import { Controller, Get, Param, ParseFloatPipe, Query } from '@nestjs/common';
-import {
-  ApiOperation,
-  ApiParam,
-  ApiQuery,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PropertyService } from './public-property.service';
 import { PropertyStatus, PropertyType } from '@prisma/client';
 import { FindPropertiesQueryDto } from './dto/find-properties-query.dto';
@@ -69,10 +63,7 @@ export class PropertyController {
     @Param('minPrice', ParseFloatPipe) minPrice: number,
     @Param('maxPrice', ParseFloatPipe) maxPrice: number,
   ) {
-    return this.propertyService.findPropertiesByPriceRange(
-      minPrice,
-      maxPrice,
-    );
+    return this.propertyService.findPropertiesByPriceRange(minPrice, maxPrice);
   }
 
   @Get('status/:status')

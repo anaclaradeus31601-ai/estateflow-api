@@ -29,7 +29,30 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
-      "prettier/prettier": ["error", { endOfLine: "auto" }],
+      'no-restricted-properties': [
+        'error',
+        {
+          property: '$queryRaw',
+          message:
+            'Avoid raw SQL queries. Prefer Prisma methods like findMany, findUnique, create, update, and delete.',
+        },
+        {
+          property: '$queryRawUnsafe',
+          message:
+            'Avoid unsafe raw SQL queries. Prefer Prisma methods or a reviewed repository abstraction.',
+        },
+        {
+          property: '$executeRaw',
+          message:
+            'Avoid raw SQL execution. Prefer Prisma methods or isolate the query behind a reviewed abstraction.',
+        },
+        {
+          property: '$executeRawUnsafe',
+          message:
+            'Avoid unsafe raw SQL execution. Prefer Prisma methods or isolate the query behind a reviewed abstraction.',
+        },
+      ],
+      'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },
 );

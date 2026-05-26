@@ -1,21 +1,25 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
   Patch,
   Param,
   Delete,
-  ParseFloatPipe,
+  BadRequestException,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { AdminPropertyService } from './admin-property.service';
 import { CreatePropertyDto } from '../dto/create-property.dto';
 import { UpdatePropertyDto } from '../dto/update-property.dto';
@@ -23,6 +27,10 @@ import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import {
+  buildImageUploadOptions,
+  buildPublicUploadPath,
+} from 'src/common/upload/image-upload';
 
 @ApiTags('admin/property')
 @ApiBearerAuth()
@@ -49,6 +57,47 @@ export class AdminPropertyController {
     @Body() updatePropertyDto: UpdatePropertyDto,
   ) {
     return this.propertyService.update(id, updatePropertyDto);
+  }
+
+  @Post(':id/images')
+  @Roles(UserRole.ADMIN)
+  @UseInterceptors(
+    FilesInterceptor('images', 10, buildImageUploadOptions('properties')),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        images: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+      required: ['images'],
+    },
+  })
+  @ApiOperation({ summary: 'Adicionar imagens a um imóvel' })
+  @ApiParam({ name: 'id', description: 'ID do imóvel' })
+  @ApiResponse({ status: 201, description: 'Imagens adicionadas' })
+  @ApiResponse({ status: 400, description: 'Arquivo inválido' })
+  uploadImages(
+    @Param('id') id: string,
+    @UploadedFiles() images: Express.Multer.File[],
+  ) {
+    if (!images || images.length === 0) {
+      throw new BadRequestException('At least one image file is required');
+    }
+
+    return this.propertyService.addImages(
+      id,
+      images.map((image) =>
+        buildPublicUploadPath('properties', image.filename),
+      ),
+    );
   }
 
   @Delete(':id')

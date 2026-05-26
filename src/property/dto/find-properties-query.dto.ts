@@ -6,7 +6,7 @@ export class FindPropertiesQueryDto {
   @ApiPropertyOptional({ example: 'apartamento' })
   @IsOptional()
   @IsString()
-  title?: string;
+  search?: string;
 
   @ApiPropertyOptional({ example: 1, minimum: 1 })
   @IsOptional()

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import {  AdminPropertyService } from './admin/admin-property.service';
-import {  AdminPropertyController } from './admin/admin-property.controller';
+import { AdminPropertyService } from './admin/admin-property.service';
+import { AdminPropertyController } from './admin/admin-property.controller';
 import { PropertyController } from './public-property.controller';
 import { PropertyService } from './public-property.service';
 
@@ -10,4 +10,4 @@ import { PropertyService } from './public-property.service';
 })
 export class PropertyModule {}
 
-//quando o modulo iniciar popular a tabela 
+//quando o modulo iniciar popular a tabela

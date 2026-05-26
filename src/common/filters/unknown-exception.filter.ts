@@ -42,15 +42,17 @@ export class UnknownExceptionFilter implements ExceptionFilter {
       exception instanceof Error ? exception.stack : undefined,
     );
 
-    response.status(status).json(
-      buildErrorResponse(
-        request,
-        status,
-        process.env.NODE_ENV === 'production'
-          ? 'Erro interno do servidor'
-          : message,
-        'Internal Server Error',
-      ),
-    );
+    response
+      .status(status)
+      .json(
+        buildErrorResponse(
+          request,
+          status,
+          process.env.NODE_ENV === 'production'
+            ? 'Erro interno do servidor'
+            : message,
+          'Internal Server Error',
+        ),
+      );
   }
 }

@@ -47,7 +47,11 @@ export class VisitPublicController {
 
   @Get('date/:date')
   @ApiOperation({ summary: 'Listar visitas por data' })
-  @ApiParam({ name: 'date', example: '2026-05-20', description: 'Data (YYYY-MM-DD)' })
+  @ApiParam({
+    name: 'date',
+    example: '2026-05-20',
+    description: 'Data (YYYY-MM-DD)',
+  })
   @ApiResponse({ status: 200, description: 'Visitas na data' })
   findVisitsByDate(@Param('date') date: string) {
     return this.visitService.findVisitsByDate(new Date(date));

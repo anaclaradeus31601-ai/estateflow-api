@@ -11,7 +11,10 @@ export class PropertyamenityPublicController {
 
   @Get()
   @ApiOperation({ summary: 'Listar comodidades dos imóveis' })
-  @ApiResponse({ status: 200, description: 'Lista de vínculos imóvel-comodidade' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de vínculos imóvel-comodidade',
+  })
   findAll() {
     return this.propertyamenityService.findAll();
   }

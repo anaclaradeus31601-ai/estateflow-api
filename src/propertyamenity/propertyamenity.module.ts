@@ -5,7 +5,10 @@ import { PropertyamenityPublicService } from './propertyamenity-public.service';
 import { PropertyamenityPublicController } from './propertyamenity-public.controller';
 
 @Module({
-  controllers: [PropertyamenityAdminController, PropertyamenityPublicController],
+  controllers: [
+    PropertyamenityAdminController,
+    PropertyamenityPublicController,
+  ],
   providers: [PropertyamenityAdminService, PropertyamenityPublicService],
 })
 export class PropertyamenityModule {}

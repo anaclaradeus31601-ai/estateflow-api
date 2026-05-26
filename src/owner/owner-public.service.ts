@@ -12,7 +12,7 @@ export class OwnerPublicService {
         name: true,
         email: true,
         phone: true,
-        cpfCnpj: true,      
+        cpfCnpj: true,
       },
     });
   }
@@ -25,7 +25,7 @@ export class OwnerPublicService {
         name: true,
         email: true,
         phone: true,
-        cpfCnpj: true,      
+        cpfCnpj: true,
       },
     });
   }

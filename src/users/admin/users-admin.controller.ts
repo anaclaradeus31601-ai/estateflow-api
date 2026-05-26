@@ -6,15 +6,21 @@ import {
   Patch,
   Param,
   Delete,
+  BadRequestException,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -22,6 +28,10 @@ import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { UserRole } from '@prisma/client';
 import { UsersAdminService } from './users-admin.service';
+import {
+  buildImageUploadOptions,
+  buildPublicUploadPath,
+} from 'src/common/upload/image-upload';
 
 @ApiTags('admin/users')
 @ApiBearerAuth()
@@ -55,6 +65,42 @@ export class UsersAdminController {
   @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
+  }
+
+  @Patch(':id/avatar')
+  @Roles(UserRole.ADMIN)
+  @UseInterceptors(
+    FileInterceptor('avatar', buildImageUploadOptions('avatars')),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        avatar: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+      required: ['avatar'],
+    },
+  })
+  @ApiOperation({ summary: 'Atualizar avatar de um usuário' })
+  @ApiParam({ name: 'id', description: 'ID do usuário' })
+  @ApiResponse({ status: 200, description: 'Avatar atualizado' })
+  @ApiResponse({ status: 400, description: 'Arquivo inválido' })
+  updateAvatar(
+    @Param('id') id: string,
+    @UploadedFile() avatar: Express.Multer.File,
+  ) {
+    if (!avatar) {
+      throw new BadRequestException('Avatar file is required');
+    }
+
+    return this.usersService.updateAvatar(
+      id,
+      buildPublicUploadPath('avatars', avatar.filename),
+    );
   }
 
   @Delete(':id')

@@ -4,9 +4,14 @@ import {
   Injectable,
   ForbiddenException,
 } from '@nestjs/common';
-
+import type { Request } from 'express';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
+import type { AuthUser } from '../types/auth-user.type';
+
+type AuthenticatedRequest = Request & {
+  user?: AuthUser;
+};
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -16,10 +21,7 @@ export class RolesGuard implements CanActivate {
     // Roles exigidas na rota
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(
       ROLES_KEY,
-      [
-        context.getHandler(),
-        context.getClass(),
-      ],
+      [context.getHandler(), context.getClass()],
     );
 
     // Se não exigir role, libera
@@ -27,7 +29,7 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
 
     const user = request.user;
 
@@ -40,9 +42,7 @@ export class RolesGuard implements CanActivate {
     const hasRole = requiredRoles.includes(user.role);
 
     if (!hasRole) {
-      throw new ForbiddenException(
-        'Você não possui permissão',
-      );
+      throw new ForbiddenException('Você não possui permissão');
     }
 
     return true;

@@ -11,10 +11,6 @@ import {
     PrismaExceptionFilter,
     UnknownExceptionFilter,
   ],
-  exports: [
-    HttpExceptionFilter,
-    PrismaExceptionFilter,
-    UnknownExceptionFilter,
-  ],
+  exports: [HttpExceptionFilter, PrismaExceptionFilter, UnknownExceptionFilter],
 })
 export class CommonModule {}

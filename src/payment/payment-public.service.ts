@@ -13,7 +13,7 @@ export class PaymentPublicService {
     return this.prisma.payment.findUnique({
       where: {
         id: id,
-      }
+      },
     });
   }
 }
