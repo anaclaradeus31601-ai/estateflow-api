@@ -25,6 +25,16 @@ type CookieRequest = Request & {
   cookies?: unknown;
 };
 
+const LOGIN_RATE_LIMIT =
+  process.env.NODE_ENV === 'test'
+    ? { limit: 20, ttl: 60_000 }
+    : { limit: 5, ttl: 60_000 };
+
+const REFRESH_RATE_LIMIT =
+  process.env.NODE_ENV === 'test'
+    ? { limit: 20, ttl: 60_000 }
+    : { limit: 10, ttl: 60_000 };
+
 function getCookieValue(
   request: CookieRequest,
   cookieName: string,
@@ -44,7 +54,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: LOGIN_RATE_LIMIT })
   @ApiOperation({ summary: 'Autenticar usuário' })
   @ApiResponse({ status: 201, description: 'Tokens de acesso gerados' })
   @ApiResponse({ status: 401, description: 'Credenciais inválidas' })
@@ -74,7 +84,7 @@ export class AuthController {
   }
 
   @Post('refresh')
-  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Throttle({ default: REFRESH_RATE_LIMIT })
   @ApiOperation({ summary: 'Renovar access token' })
   @ApiResponse({ status: 201, description: 'Novo access token' })
   @ApiResponse({ status: 401, description: 'Refresh token inválido' })
@@ -109,14 +119,38 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   @ApiBearerAuth()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({ summary: 'Encerrar sessão' })
   @ApiResponse({ status: 201, description: 'Logout realizado' })
   @ApiResponse({ status: 401, description: 'Não autenticado' })
   async logout(
     @CurrentUser() user: AuthUser,
+    @Req() req: CookieRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.authService.logout(user.sub);
+    const result = await this.authService.logoutCurrentSession(
+      user.sub,
+      getCookieValue(req, REFRESH_TOKEN_COOKIE),
+    );
+
+    res.cookie(ACCESS_TOKEN_COOKIE, '', buildExpiredCookieOptions());
+    res.cookie(REFRESH_TOKEN_COOKIE, '', buildExpiredCookieOptions());
+
+    return result;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout-all')
+  @ApiBearerAuth()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Encerrar todas as sessões' })
+  @ApiResponse({ status: 201, description: 'Logout global realizado' })
+  @ApiResponse({ status: 401, description: 'Não autenticado' })
+  async logoutAll(
+    @CurrentUser() user: AuthUser,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.logoutAllSessions(user.sub);
 
     res.cookie(ACCESS_TOKEN_COOKIE, '', buildExpiredCookieOptions());
     res.cookie(REFRESH_TOKEN_COOKIE, '', buildExpiredCookieOptions());

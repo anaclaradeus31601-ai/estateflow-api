@@ -1,5 +1,6 @@
 import type { Request } from 'express';
 import type { ErrorResponse } from '../interfaces/error-response.interface';
+import { normalizeRequestId } from '../logging/request-log-context';
 
 export function buildErrorResponse(
   request: Request,
@@ -11,6 +12,7 @@ export function buildErrorResponse(
     statusCode,
     message,
     error,
+    requestId: normalizeRequestId(request.id),
     timestamp: new Date().toISOString(),
     path: request.url,
   };

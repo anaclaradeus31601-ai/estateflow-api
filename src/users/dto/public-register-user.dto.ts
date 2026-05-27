@@ -4,8 +4,11 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  MinLength,
 } from 'class-validator';
+import {
+  PASSWORD_DESCRIPTION,
+  StrongPassword,
+} from 'src/common/validation/password';
 
 export class PublicRegisterUserDto {
   @ApiProperty({ example: 'João Cliente' })
@@ -23,9 +26,9 @@ export class PublicRegisterUserDto {
   @IsString()
   phone?: string;
 
-  @ApiProperty({ example: 'senha123', minLength: 6 })
+  @ApiProperty({ example: 'Senha@123', description: PASSWORD_DESCRIPTION })
   @IsNotEmpty()
   @IsString()
-  @MinLength(6)
+  @StrongPassword()
   password!: string;
 }

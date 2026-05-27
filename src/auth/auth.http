@@ -17,4 +17,6 @@ Content-Type: application/json
 
 ### 🚪 LOGOUT
 POST http://localhost:3000/auth/logout
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbXA4YWdqdWowMDAwa3p3NmYwaGYxa29iIiwiZW1haWwiOiJhZG1pbjFAZXhhbXBsZS5jb20iLCJyb2xlIjoiQURNSU4iLCJuYW1lIjoiQWRtaW4gMSIsImlhdCI6MTc3ODk0NTQ4MywiZXhwIjoxNzc4OTQ2MzgzfQ.Q7Z_kia_HYwyyh0OkimtJ7tyIRkOXXvn1432JlaTwE8
+
+### 🚪 LOGOUT DE TODAS AS SESSOES
+POST http://localhost:3000/auth/logout-all

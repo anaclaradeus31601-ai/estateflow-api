@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Prisma, UserRole } from '@prisma/client';
+import { PinoLogger } from 'nestjs-pino';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FindAuditLogsDto } from './dto/find-audit-logs.dto';
 
@@ -23,17 +24,40 @@ export interface CreateAuditLogInput {
 
 @Injectable()
 export class AuditService {
-  private readonly logger = new Logger(AuditService.name);
-
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(AuditService.name);
+  }
 
   async create(input: CreateAuditLogInput) {
     try {
-      return await this.prisma.auditLog.create({
+      const auditLog = await this.prisma.auditLog.create({
         data: input,
       });
+
+      this.logger.info({
+        category: 'audit',
+        event: 'audit_log_persisted',
+        actorId: input.actorId ?? null,
+        actorRole: input.actorRole,
+        action: input.action,
+        resource: input.resource,
+        resourceId: input.resourceId ?? null,
+        responseStatus: input.responseStatus,
+      });
+
+      return auditLog;
     } catch (error) {
-      this.logger.error('Failed to persist audit log', error);
+      this.logger.error({
+        category: 'audit',
+        event: 'audit_log_persist_failed',
+        action: input.action,
+        resource: input.resource,
+        resourceId: input.resourceId ?? null,
+        error,
+      });
       return null;
     }
   }

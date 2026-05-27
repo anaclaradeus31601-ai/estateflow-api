@@ -20,9 +20,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CreateUserDto } from '../dto/create-user.dto';
-import { UpdateUserDto } from '../dto/update-user.dto';
+import { AdminCreateUserDto } from '../dto/admin-create-user.dto';
+import { AdminUpdateUserDto } from '../dto/admin-update-user.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
@@ -41,11 +42,13 @@ export class UsersAdminController {
   constructor(private readonly usersService: UsersAdminService) {}
 
   @Post()
+  @Roles(UserRole.ADMIN)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @ApiOperation({ summary: 'Criar usuário' })
   @ApiResponse({ status: 201, description: 'Usuário criado' })
   @ApiResponse({ status: 401, description: 'Não autenticado' })
   @ApiResponse({ status: 403, description: 'Sem permissão' })
-  create(@Body() createUserDto: CreateUserDto) {
+  create(@Body() createUserDto: AdminCreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
@@ -59,11 +62,12 @@ export class UsersAdminController {
 
   @Patch(':id')
   @Roles(UserRole.ADMIN)
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @ApiOperation({ summary: 'Atualizar usuário' })
   @ApiParam({ name: 'id', description: 'ID do usuário' })
   @ApiResponse({ status: 200, description: 'Usuário atualizado' })
   @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  update(@Param('id') id: string, @Body() updateUserDto: AdminUpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 

@@ -1,34 +1,38 @@
-POST http://localhost:3000/users
+POST http://localhost:3000/admin/users
 Content-Type: application/json
 
 {
   "name": "Admin 1",
   "email": "admin1@example.com",
-  "password": "admin123",
+  "password": "Senha@123",
   "role": "ADMIN"
 }
 
 ###
-GET http://localhost:3000/users
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiQW5hIENsYXJhIFNhbnRvcyBkZSBEZXVzIiwiZW1haWwiOiJhbmFjbGFyYTIxNjAxQGdtYWlsLmNvbSIsInJvbGUiOiJDTElFTlQiLCJzdWIiOiJjbXA3b3dhM3kwMDAwa3oybXA3MDZ5YjIwIiwiaWF0IjoxNzc4OTMyNDA4LCJleHAiOjE3Nzg5MzYwMDh9.j53pc-ACozFDrtjhmErhHkB-NkwJcK3tzwynmXzIUrc
 ###
+GET http://localhost:3000/admin/users
+ 
 
+###
 POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-    "email": "admin1@example.com",
+    "email": "admin@example.com",
     "password": "admin123"
 }
 ###
 
+###
 POST http://localhost:3000/auth/logout
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiQWRtaW4gMSIsImVtYWlsIjoiYWRtaW4xQGV4YW1wbGUuY29tIiwicm9sZSI6IkFETUlOIiwic3ViIjoiY21wOGFnanVqMDAwMGt6dzZmMGhmMWtvYiIsImlhdCI6MTc3ODk0NDA0NywiZXhwIjoxNzc4OTQ3NjQ3fQ.zxePbviz4Q69UhcwtMnrniQTJaT9uVslyk5iIXDwMAs
 
 ###
+POST http://localhost:3000/auth/logout-all
+Content-Type: application/json
 
-POST http://localhost:3000/auth/refresh-token
+###
+POST http://localhost:3000/auth/refresh
 Content-Type: application/json
 {
     "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiQWRtaW4gMSIsImVtYWlsIjoiYWRtaW4xQGV4YW1wbGUuY29tIiwicm9sZSI6IkFETUlOIiwic3ViIjoiY21wOGFnanVqMDAwMGt6dzZmMGhmMWtvYiIsImlhdCI6MTc3ODk0Mzk5NSwiZXhwIjoxNzc5NTQ4Nzk1fQ.bxxRj3A8c81I8lbGD_bloa3A3xZOzGQVmzaV4JLQtf8"
@@ -36,12 +40,28 @@ Content-Type: application/json
 
 
 ###
-POST http://localhost:3000/users
+POST http://localhost:3000/users/register
 Content-Type: application/json
 
 {
     "name": "Ana Clara Santos de Deus",
     "email": "anaclaradeus21601@gmail.com",
-    "password": "Clara1701@",
-    "role": "CLIENT"
+    "password": "Clara1701@"
+}
+
+###
+POST http://localhost:3000/users/forgot-password/request
+Content-Type: application/json
+
+{
+  "email": "admin@example.com"
+}
+
+###
+POST http://localhost:3000/users/forgot-password/confirm
+Content-Type: application/json
+
+{
+  "token": "cole-o-token-aqui",
+  "newPassword": "NovaSenha@123"
 }

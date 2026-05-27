@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AuditService } from './audit.service';
 import { AuthUser } from 'src/auth/types/auth-user.type';
+import { sanitizeForLogging } from 'src/common/logging/redact-sensitive-data';
 
 type AuditedRequest = Request & {
   user?: AuthUser;
@@ -47,22 +48,7 @@ function toJsonValue(value: unknown): Prisma.InputJsonValue | undefined {
     return undefined;
   }
 
-  return sanitizeObject(value) as Prisma.InputJsonValue;
-}
-
-function getResourceId(result: unknown): string | undefined {
-  if (
-    typeof result === 'object' &&
-    result !== null &&
-    'id' in result &&
-    (typeof result.id === 'string' ||
-      typeof result.id === 'number' ||
-      typeof result.id === 'boolean')
-  ) {
-    return String(result.id);
-  }
-
-  return undefined;
+  return sanitizeForLogging(value) as Prisma.InputJsonValue;
 }
 
 function getRequestParam(
@@ -87,34 +73,19 @@ function getRoutePath(route: unknown): string {
   return typeof path === 'string' ? path : '';
 }
 
-function sanitizeObject(value: unknown): unknown {
-  if (!value || typeof value !== 'object') {
-    return value;
+function getResourceId(result: unknown): string | undefined {
+  if (
+    typeof result === 'object' &&
+    result !== null &&
+    'id' in result &&
+    (typeof result.id === 'string' ||
+      typeof result.id === 'number' ||
+      typeof result.id === 'boolean')
+  ) {
+    return String(result.id);
   }
 
-  if (Array.isArray(value)) {
-    return value.map(sanitizeObject);
-  }
-
-  return Object.entries(value as Record<string, unknown>).reduce<
-    Record<string, unknown>
-  >((acc, [key, currentValue]) => {
-    if (
-      [
-        'password',
-        'refresh_token',
-        'refreshToken',
-        'access_token',
-        'accessToken',
-      ].includes(key)
-    ) {
-      acc[key] = '[REDACTED]';
-      return acc;
-    }
-
-    acc[key] = sanitizeObject(currentValue);
-    return acc;
-  }, {});
+  return undefined;
 }
 
 function resolveResource(path: string) {

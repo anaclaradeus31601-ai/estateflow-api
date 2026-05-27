@@ -67,7 +67,7 @@ describe('Auth and Access (e2e)', () => {
         name: 'Cliente E2E',
         email,
         phone: '11999999999',
-        password: '123456',
+        password: 'Senha@123',
       })
       .expect(201);
 
@@ -76,8 +76,83 @@ describe('Auth and Access (e2e)', () => {
       email,
       phone: '11999999999',
       role: UserRole.CLIENT,
+      emailVerificationRequired: true,
     });
     expect(response.body).not.toHaveProperty('password');
+  });
+
+  it('POST /users/verify-email/request and /confirm verifies a public e-mail', async () => {
+    const email = `verify-${Date.now()}@example.com`;
+
+    await request(getServer(app))
+      .post('/users/register')
+      .send({
+        name: 'Cliente Verify',
+        email,
+        password: 'Senha@123',
+      })
+      .expect(201);
+
+    const requestVerificationResponse = await request(getServer(app))
+      .post('/users/verify-email/request')
+      .send({ email })
+      .expect(201);
+
+    expect(requestVerificationResponse.body).toHaveProperty(
+      'verificationToken',
+    );
+
+    await request(getServer(app))
+      .post('/users/verify-email/confirm')
+      .send({
+        token: requestVerificationResponse.body.verificationToken as string,
+      })
+      .expect(201)
+      .expect({
+        message: 'E-mail verificado com sucesso.',
+      });
+  });
+
+  it('POST /users/forgot-password/request and /confirm resets the password and invalidates sessions', async () => {
+    const email = `reset-${Date.now()}@example.com`;
+    const originalPassword = 'Senha@123';
+    const newPassword = 'NovaSenha@123';
+
+    await request(getServer(app))
+      .post('/users/register')
+      .send({
+        name: 'Cliente Reset',
+        email,
+        password: originalPassword,
+      })
+      .expect(201);
+
+    const requestResetResponse = await request(getServer(app))
+      .post('/users/forgot-password/request')
+      .send({ email })
+      .expect(201);
+
+    expect(requestResetResponse.body).toHaveProperty('resetToken');
+
+    const userCookies = await loginAndGetCookies(app, email, originalPassword);
+
+    await request(getServer(app))
+      .post('/users/forgot-password/confirm')
+      .send({
+        token: requestResetResponse.body.resetToken as string,
+        newPassword,
+      })
+      .expect(201)
+      .expect({
+        message: 'Senha redefinida com sucesso.',
+      });
+
+    await request(getServer(app))
+      .get('/users/me')
+      .set('Cookie', userCookies)
+      .expect(401);
+
+    await loginAndGetCookies(app, email, newPassword);
   });
 
   it('POST /auth/login sets cookies and GET /users/me reads the session', async () => {
@@ -94,8 +169,13 @@ describe('Auth and Access (e2e)', () => {
     expect(profileResponse.body).not.toHaveProperty('password');
   });
 
-  it('POST /auth/logout clears the session cookie flow', async () => {
-    const cookies = await loginAndGetCookies(
+  it('POST /auth/logout clears only the current session', async () => {
+    const currentSessionCookies = await loginAndGetCookies(
+      app,
+      'admin@example.com',
+      'admin123',
+    );
+    const otherSessionCookies = await loginAndGetCookies(
       app,
       'admin@example.com',
       'admin123',
@@ -103,15 +183,17 @@ describe('Auth and Access (e2e)', () => {
 
     await request(getServer(app))
       .get('/users/me')
-      .set('Cookie', cookies)
+      .set('Cookie', currentSessionCookies)
       .expect(200);
 
     const logoutResponse: Response = await request(getServer(app))
       .post('/auth/logout')
-      .set('Cookie', cookies)
+      .set('Cookie', currentSessionCookies)
       .expect(201);
 
-    expect(logoutResponse.body).toEqual({ message: 'logged out' });
+    expect(logoutResponse.body).toEqual({
+      message: 'logged out from current session',
+    });
     expect(logoutResponse.headers['set-cookie']).toEqual(
       expect.arrayContaining([
         expect.stringContaining('access_token='),
@@ -123,6 +205,39 @@ describe('Auth and Access (e2e)', () => {
       .get('/users/me')
       .set('Cookie', logoutResponse.headers['set-cookie'] as string[])
       .expect(401);
+
+    await request(getServer(app))
+      .get('/users/me')
+      .set('Cookie', otherSessionCookies)
+      .expect(200);
+  });
+
+  it('POST /auth/logout-all invalidates all sessions', async () => {
+    const firstSessionCookies = await loginAndGetCookies(
+      app,
+      'admin@example.com',
+      'admin123',
+    );
+    const secondSessionCookies = await loginAndGetCookies(
+      app,
+      'admin@example.com',
+      'admin123',
+    );
+
+    await request(getServer(app))
+      .post('/auth/logout-all')
+      .set('Cookie', firstSessionCookies)
+      .expect(201)
+      .expect({
+        message: 'logged out from all sessions',
+      });
+
+    await request(getServer(app))
+      .get('/users/me')
+      .set('Cookie', secondSessionCookies)
+      .expect(401);
+
+    adminCookies = await loginAndGetCookies(app, 'admin@example.com', 'admin123');
   });
 
   it('PATCH /users/me/avatar uploads a user avatar safely', async () => {
@@ -154,6 +269,20 @@ describe('Auth and Access (e2e)', () => {
     expect(users.length).toBeGreaterThan(0);
   });
 
+  it('blocks unauthenticated access to GET and POST /admin/users', async () => {
+    await request(getServer(app)).get('/admin/users').expect(401);
+
+    await request(getServer(app))
+      .post('/admin/users')
+      .send({
+        name: 'Admin no auth',
+        email: `no-auth-${Date.now()}@example.com`,
+        password: 'Senha@123',
+        role: UserRole.ADMIN,
+      })
+      .expect(401);
+  });
+
   it('POST /admin/property/:id/images uploads property images for admins', async () => {
     const response = await request(getServer(app))
       .post('/admin/property/1/images')
@@ -181,5 +310,28 @@ describe('Auth and Access (e2e)', () => {
       .get('/admin/users')
       .set('Cookie', realtorCookies)
       .expect(403);
+  });
+
+  it('blocks REALTOR from creating admin users', async () => {
+    await request(getServer(app))
+      .post('/admin/users')
+      .set('Cookie', realtorCookies)
+      .send({
+        name: 'Nope',
+        email: `realtor-blocked-${Date.now()}@example.com`,
+        password: 'Senha@123',
+        role: UserRole.ADMIN,
+      })
+      .expect(403);
+  });
+
+  it('blocks role changes through PATCH /users/me', async () => {
+    await request(getServer(app))
+      .patch('/users/me')
+      .set('Cookie', adminCookies)
+      .send({
+        role: UserRole.CLIENT,
+      })
+      .expect(400);
   });
 });

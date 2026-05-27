@@ -37,6 +37,10 @@ export class AuthService {
     private prisma: PrismaService,
   ) {}
 
+  private getRefreshTokenSecret() {
+    return process.env.JWT_REFRESH_SECRET ?? process.env.JWT_SECRET;
+  }
+
   private signAccessToken(payload: AuthUser) {
     return this.jwtService.sign(payload, {
       expiresIn: '15m',
@@ -48,7 +52,12 @@ export class AuthService {
     return this.jwtService.sign(payload, {
       expiresIn: '7d',
       jwtid: randomUUID(),
+      secret: this.getRefreshTokenSecret(),
     });
+  }
+
+  private async hashToken(token: string) {
+    return bcrypt.hash(token, 10);
   }
 
   // 🔐 LOGIN
@@ -62,8 +71,11 @@ export class AuthService {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) throw new UnauthorizedException();
 
+    const sessionId = randomUUID();
+
     const payload: AuthUser = {
       sub: user.id,
+      sid: sessionId,
       email: user.email,
       role: user.role,
       name: user.name,
@@ -83,8 +95,9 @@ export class AuthService {
     // 🧠 SESSION (SaaS STYLE)
     await this.prisma.session.create({
       data: {
+        id: sessionId,
         userId: user.id,
-        refreshToken,
+        refreshToken: await this.hashToken(refreshToken),
         ip,
         userAgent,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -107,18 +120,30 @@ export class AuthService {
 
     try {
       payload = this.jwtService.verify(refreshToken, {
-        secret: process.env.JWT_SECRET,
+        secret: this.getRefreshTokenSecret(),
       });
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    // 🔍 valida sessão (NÃO user.refreshToken mais)
-    const session = await this.prisma.session.findFirst({
-      where: { refreshToken },
+    const session = await this.prisma.session.findUnique({
+      where: { id: payload.sid },
     });
 
-    if (!session) {
+    if (!session || session.userId !== payload.sub) {
+      throw new UnauthorizedException('Session not found');
+    }
+
+    if (session.expiresAt <= new Date()) {
+      await this.prisma.session.delete({
+        where: { id: session.id },
+      });
+      throw new UnauthorizedException('Session expired');
+    }
+
+    const tokenMatches = await bcrypt.compare(refreshToken, session.refreshToken);
+
+    if (!tokenMatches) {
       throw new UnauthorizedException('Session not found');
     }
 
@@ -133,6 +158,7 @@ export class AuthService {
     // 🔥 ROTATION (gera novos tokens)
     const newPayload: AuthUser = {
       sub: user.id,
+      sid: session.id,
       email: user.email,
       role: user.role,
       name: user.name,
@@ -145,7 +171,8 @@ export class AuthService {
     await this.prisma.session.update({
       where: { id: session.id },
       data: {
-        refreshToken: newRefreshToken,
+        refreshToken: await this.hashToken(newRefreshToken),
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
     });
 
@@ -155,12 +182,48 @@ export class AuthService {
     };
   }
 
-  // 🚪 LOGOUT (SaaS STYLE)
-  async logout(userId: string) {
+  async logoutCurrentSession(userId: string, refreshToken?: string) {
+    if (!refreshToken) {
+      return { message: 'logged out from current session' };
+    }
+
+    let payload: AuthUser;
+
+    try {
+      payload = this.jwtService.verify(refreshToken, {
+        secret: this.getRefreshTokenSecret(),
+      });
+    } catch {
+      return { message: 'logged out from current session' };
+    }
+
+    if (payload.sub !== userId) {
+      throw new UnauthorizedException('Invalid session');
+    }
+
+    const session = await this.prisma.session.findUnique({
+      where: { id: payload.sid },
+    });
+
+    if (
+      session &&
+      session.userId === userId &&
+      session.expiresAt > new Date() &&
+      (await bcrypt.compare(refreshToken, session.refreshToken))
+    ) {
+      await this.prisma.session.delete({
+        where: { id: session.id },
+      });
+    }
+
+    return { message: 'logged out from current session' };
+  }
+
+  async logoutAllSessions(userId: string) {
     await this.prisma.session.deleteMany({
       where: { userId },
     });
 
-    return { message: 'logged out' };
+    return { message: 'logged out from all sessions' };
   }
 }

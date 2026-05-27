@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-jwt';
 import { AuthUser } from './types/auth-user.type';
 import type { Request } from 'express';
 import { ACCESS_TOKEN_COOKIE } from './auth.constants';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 type CookieRequest = Request & {
   cookies?: unknown;
@@ -35,7 +36,7 @@ function extractJwtFromCookie(request?: CookieRequest): string | null {
 // `passport-jwt` typings are compatible at runtime but not fully understood by the
 // strict ESLint type-aware rules in this project, so we keep the strategy wiring localized here.
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly prisma: PrismaService) {
     const options = {
       jwtFromRequest: extractJwtFromCookie,
       secretOrKey: process.env.JWT_SECRET ?? '',
@@ -45,7 +46,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super(options);
   }
 
-  validate(payload: AuthUser): AuthUser {
+  async validate(payload: AuthUser): Promise<AuthUser> {
+    const session = await this.prisma.session.findUnique({
+      where: { id: payload.sid },
+      select: {
+        id: true,
+        userId: true,
+        expiresAt: true,
+      },
+    });
+
+    if (!session || session.userId !== payload.sub) {
+      throw new UnauthorizedException();
+    }
+
+    if (session.expiresAt <= new Date()) {
+      throw new UnauthorizedException();
+    }
+
     return payload;
   }
 }

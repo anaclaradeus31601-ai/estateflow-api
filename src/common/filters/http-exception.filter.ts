@@ -4,12 +4,16 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { buildErrorResponse } from '../utils/build-error-response';
+import { buildRequestLogContext } from '../logging/request-log-context';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(HttpExceptionFilter.name);
+
   catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -34,6 +38,22 @@ export class HttpExceptionFilter implements ExceptionFilter {
       if (typeof body.error === 'string') {
         error = body.error;
       }
+    }
+
+    const context = buildRequestLogContext(request);
+    const logMessage = `${request.method} ${request.originalUrl} ${status}`;
+    const logContext = JSON.stringify({
+      category: 'error',
+      errorType: 'http_exception',
+      ...context,
+      error,
+      message,
+    });
+
+    if (status >= 500) {
+      this.logger.error(logMessage, logContext);
+    } else {
+      this.logger.warn(`${logMessage} ${logContext}`);
     }
 
     response

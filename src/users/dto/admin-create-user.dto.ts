@@ -4,11 +4,12 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
-  MinLength,
 } from 'class-validator';
+import { PASSWORD_DESCRIPTION, StrongPassword } from 'src/common/validation/password';
 
-export class CreateUserDto {
+export class AdminCreateUserDto {
   @ApiProperty({ example: 'João Corretor' })
   @IsNotEmpty()
   @IsString()
@@ -19,10 +20,15 @@ export class CreateUserDto {
   @IsEmail()
   email!: string;
 
-  @ApiProperty({ example: 'senha123', minLength: 6 })
+  @ApiProperty({ example: '(48) 99999-9999', required: false })
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @ApiProperty({ example: 'Senha@123', description: PASSWORD_DESCRIPTION })
   @IsNotEmpty()
   @IsString()
-  @MinLength(6)
+  @StrongPassword()
   password!: string;
 
   @ApiProperty({ enum: UserRole, example: UserRole.REALTOR })

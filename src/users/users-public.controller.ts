@@ -1,11 +1,11 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   UseGuards,
   Patch,
   Body,
   Post,
-  BadRequestException,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -17,14 +17,18 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersPublicService } from './users-public.service';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import type { AuthUser } from 'src/auth/types/auth-user.type';
 import { PublicRegisterUserDto } from './dto/public-register-user.dto';
-import { Throttle } from '@nestjs/throttler';
+import { PublicUpdateProfileDto } from './dto/public-update-profile.dto';
+import { RequestEmailVerificationDto } from './dto/request-email-verification.dto';
+import { ConfirmEmailVerificationDto } from './dto/confirm-email-verification.dto';
+import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
+import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto';
 import {
   buildImageUploadOptions,
   buildPublicUploadPath,
@@ -44,6 +48,53 @@ export class UsersPublicController {
     return this.usersService.register(publicRegisterUserDto);
   }
 
+  @Post('verify-email/request')
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Solicitar verificacao de e-mail' })
+  @ApiResponse({ status: 201, description: 'Solicitacao registrada' })
+  requestEmailVerification(
+    @Body() requestEmailVerificationDto: RequestEmailVerificationDto,
+  ) {
+    return this.usersService.requestEmailVerification(
+      requestEmailVerificationDto.email,
+    );
+  }
+
+  @Post('verify-email/confirm')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Confirmar verificacao de e-mail' })
+  @ApiResponse({ status: 201, description: 'E-mail verificado com sucesso' })
+  confirmEmailVerification(
+    @Body() confirmEmailVerificationDto: ConfirmEmailVerificationDto,
+  ) {
+    return this.usersService.confirmEmailVerification(
+      confirmEmailVerificationDto.token,
+    );
+  }
+
+  @Post('forgot-password/request')
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Solicitar recuperação de senha' })
+  @ApiResponse({ status: 201, description: 'Solicitação registrada' })
+  requestPasswordReset(
+    @Body() requestPasswordResetDto: RequestPasswordResetDto,
+  ) {
+    return this.usersService.requestPasswordReset(requestPasswordResetDto.email);
+  }
+
+  @Post('forgot-password/confirm')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Confirmar recuperação de senha' })
+  @ApiResponse({ status: 201, description: 'Senha redefinida com sucesso' })
+  confirmPasswordReset(
+    @Body() confirmPasswordResetDto: ConfirmPasswordResetDto,
+  ) {
+    return this.usersService.confirmPasswordReset(
+      confirmPasswordResetDto.token,
+      confirmPasswordResetDto.newPassword,
+    );
+  }
+
   @Get('me')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -57,12 +108,13 @@ export class UsersPublicController {
   @Patch('me')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({ summary: 'Atualizar perfil do usuário autenticado' })
   @ApiResponse({ status: 200, description: 'Perfil atualizado' })
   @ApiResponse({ status: 401, description: 'Não autenticado' })
   updateProfile(
     @CurrentUser() user: AuthUser,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() updateUserDto: PublicUpdateProfileDto,
   ) {
     return this.usersService.update(user.sub, updateUserDto);
   }
@@ -70,6 +122,7 @@ export class UsersPublicController {
   @Patch('me/avatar')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @UseInterceptors(
     FileInterceptor('avatar', buildImageUploadOptions('avatars')),
   )

@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import type { Request, Response } from 'express';
+import { buildRequestLogContext } from '../logging/request-log-context';
 import { buildErrorResponse } from '../utils/build-error-response';
 import { HttpExceptionFilter } from './http-exception.filter';
 import { PrismaExceptionFilter } from './prisma-exception.filter';
@@ -38,7 +39,12 @@ export class UnknownExceptionFilter implements ExceptionFilter {
         : 'Erro interno do servidor';
 
     this.logger.error(
-      message,
+      JSON.stringify({
+        category: 'error',
+        errorType: 'unknown_exception',
+        ...buildRequestLogContext(request),
+        message,
+      }),
       exception instanceof Error ? exception.stack : undefined,
     );
 
