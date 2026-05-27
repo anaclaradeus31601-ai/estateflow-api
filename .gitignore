@@ -2,6 +2,11 @@
 /dist
 /node_modules
 /build
+# uploads
+uploads/*
+!uploads/.gitkeep
+!uploads/avatars/.gitkeep
+!uploads/properties/.gitkeep
 
 # Logs
 logs
@@ -54,7 +59,5 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
-/generated/prisma
 
 /generated/prisma
