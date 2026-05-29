@@ -10,10 +10,14 @@ import { UpdatePropertyDto } from '../dto/update-property.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PropertyStatus, PropertyType } from '@prisma/client';
 import { InvalidPriceRangeException } from 'src/common/exceptions';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class AdminPropertyService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notification: NotificationService,
+  ) {}
 
   async create(createPropertyDto: CreatePropertyDto) {
     // Verifica se já existe imóvel no mesmo endereço
@@ -58,7 +62,7 @@ export class AdminPropertyService {
     }
 
     // Criação do imóvel
-    return this.prisma.property.create({
+    const createdProperty = await this.prisma.property.create({
       data: {
         title: createPropertyDto.title,
         description: createPropertyDto.description,
@@ -101,6 +105,25 @@ export class AdminPropertyService {
         realtorId: createPropertyDto.realtorId,
       },
     });
+
+    const propertyNotification = {
+      type: 'PROPERTY_CREATED',
+      title: 'Novo imóvel cadastrado',
+      message: `O imóvel ${createdProperty.title} foi cadastrado com status ${createdProperty.status}.`,
+      data: {
+        propertyId: createdProperty.id,
+        status: createdProperty.status,
+        transactionType: createdProperty.transactionType,
+      },
+    };
+
+    await this.notification.notifyUsers(
+      [createdProperty.realtorId],
+      propertyNotification,
+    );
+    await this.notification.notifyAdmins(propertyNotification);
+
+    return createdProperty;
   }
 
   async findAll() {
@@ -132,16 +155,112 @@ export class AdminPropertyService {
   async update(id: string, updatePropertyDto: UpdatePropertyDto) {
     const propertyExists = await this.prisma.property.findUnique({
       where: { id },
+      include: {
+        favorites: {
+          select: { userId: true },
+        },
+      },
     });
 
     if (!propertyExists) {
       throw new NotFoundException('Property not found');
     }
 
-    return this.prisma.property.update({
+    const shouldNotifyStatusChange =
+      updatePropertyDto.status !== undefined &&
+      updatePropertyDto.status !== propertyExists.status;
+
+    const oldSalePrice = propertyExists.salePrice;
+    const oldRentPrice = propertyExists.rentPrice;
+
+    const updatedProperty = await this.prisma.property.update({
       where: { id },
       data: updatePropertyDto,
     });
+
+    if (shouldNotifyStatusChange) {
+      const statusNotification = {
+        type: 'PROPERTY_STATUS_CHANGED',
+        title: 'Status do imóvel atualizado',
+        message: `O imóvel ${updatedProperty.title} mudou de ${propertyExists.status} para ${updatedProperty.status}.`,
+        data: {
+          propertyId: updatedProperty.id,
+          oldStatus: propertyExists.status,
+          newStatus: updatedProperty.status,
+        },
+      };
+
+      await this.notification.notifyUsers(
+        [
+          updatedProperty.realtorId,
+          ...propertyExists.favorites.map((favorite) => favorite.userId),
+        ],
+        statusNotification,
+      );
+      await this.notification.notifyAdmins(statusNotification);
+    }
+
+    const salePriceDropped =
+      oldSalePrice !== null &&
+      oldSalePrice !== undefined &&
+      updatedProperty.salePrice !== null &&
+      updatedProperty.salePrice !== undefined &&
+      updatedProperty.salePrice < oldSalePrice;
+
+    if (salePriceDropped) {
+      const priceDropNotification = {
+        type: 'PRICE_DROPPED',
+        title: 'Queda de preço',
+        message: `O imóvel ${updatedProperty.title} teve o preço de venda reduzido de R$ ${oldSalePrice} para R$ ${updatedProperty.salePrice}.`,
+        data: {
+          propertyId: updatedProperty.id,
+          priceType: 'sale',
+          oldPrice: oldSalePrice,
+          newPrice: updatedProperty.salePrice,
+        },
+      };
+
+      await this.notification.notifyUsers(
+        [
+          updatedProperty.realtorId,
+          ...propertyExists.favorites.map((favorite) => favorite.userId),
+        ],
+        priceDropNotification,
+      );
+      await this.notification.notifyAdmins(priceDropNotification);
+    }
+
+    const rentPriceDropped =
+      oldRentPrice !== null &&
+      oldRentPrice !== undefined &&
+      updatedProperty.rentPrice !== null &&
+      updatedProperty.rentPrice !== undefined &&
+      updatedProperty.rentPrice < oldRentPrice;
+
+    if (rentPriceDropped) {
+      const priceDropNotification = {
+        type: 'PRICE_DROPPED',
+        title: 'Queda de preço',
+        message: `O imóvel ${updatedProperty.title} teve o valor de locação reduzido de R$ ${oldRentPrice} para R$ ${updatedProperty.rentPrice}.`,
+        data: {
+          propertyId: updatedProperty.id,
+          priceType: 'rent',
+          oldPrice: oldRentPrice,
+          newPrice: updatedProperty.rentPrice,
+        },
+      };
+
+      await this.notification.notifyUsers(
+        [
+          updatedProperty.realtorId,
+          ...propertyExists.favorites.map((favorite) => favorite.userId),
+        ],
+        priceDropNotification,
+      );
+      await this.notification.notifyAdmins(priceDropNotification);
+    }
+
+    return updatedProperty;
   }
 
   async addImages(id: string, imagePaths: string[]) {

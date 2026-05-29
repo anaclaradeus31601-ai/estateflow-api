@@ -1,0 +1,86 @@
+### Login como cliente
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "client@example.com",
+  "password": "Senha@123"
+}
+
+###
+### Criar conversa como cliente
+POST http://localhost:3000/chat/conversations
+Content-Type: application/json
+Authorization: Bearer {{client_access_token}}
+
+{
+  "clientId": "cmp_client_id",
+  "realtorId": "cmp_realtor_id",
+  "propertyId": "cmp_property_id",
+  "initialMessage": "Olá! Tenho interesse neste imóvel e queria tirar algumas dúvidas."
+}
+
+###
+### Listar minhas conversas
+GET http://localhost:3000/chat/conversations
+Content-Type: application/json
+Authorization: Bearer {{client_access_token}}
+
+###
+### Buscar uma conversa específica
+GET http://localhost:3000/chat/conversations/cmp_conversation_id
+Content-Type: application/json
+Authorization: Bearer {{client_access_token}}
+
+###
+### Arquivar conversa
+PATCH http://localhost:3000/chat/conversations/cmp_conversation_id/status
+Content-Type: application/json
+Authorization: Bearer {{client_access_token}}
+
+{
+  "status": "ARCHIVED"
+}
+
+###
+### Reabrir conversa
+PATCH http://localhost:3000/chat/conversations/cmp_conversation_id/status
+Content-Type: application/json
+Authorization: Bearer {{client_access_token}}
+
+{
+  "status": "OPEN"
+}
+
+###
+### Enviar mensagem
+POST http://localhost:3000/chat/messages
+Content-Type: application/json
+Authorization: Bearer {{client_access_token}}
+
+{
+  "conversationId": "cmp_conversation_id",
+  "content": "Conseguimos agendar uma visita para esta semana?"
+}
+
+###
+### Listar mensagens da conversa
+GET http://localhost:3000/chat/messages?conversationId=cmp_conversation_id
+Content-Type: application/json
+Authorization: Bearer {{client_access_token}}
+
+###
+### Listar mensagens não lidas
+GET http://localhost:3000/chat/messages?conversationId=cmp_conversation_id&unreadOnly=true
+Content-Type: application/json
+Authorization: Bearer {{client_access_token}}
+
+###
+### Marcar mensagem como lida
+PATCH http://localhost:3000/chat/messages/read
+Content-Type: application/json
+Authorization: Bearer {{client_access_token}}
+
+{
+  "messageId": "cmp_message_id"
+}

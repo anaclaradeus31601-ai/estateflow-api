@@ -18,6 +18,9 @@ import { PaymentModule } from './payment/payment.module';
 import { SeedService } from './seed/seed.service';
 import { AuditModule } from './audit/audit.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { FavoriteModule } from './favorite/favorite.module';
+import { NotificationModule } from './notification/notification.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -40,11 +43,14 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     ContractModule,
     PaymentModule,
     AuditModule,
+    FavoriteModule,
+    NotificationModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
-    SeedService,
+    // SeedService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

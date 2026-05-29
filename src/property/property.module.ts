@@ -3,8 +3,10 @@ import { AdminPropertyService } from './admin/admin-property.service';
 import { AdminPropertyController } from './admin/admin-property.controller';
 import { PropertyController } from './public-property.controller';
 import { PropertyService } from './public-property.service';
+import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
+  imports: [NotificationModule],
   controllers: [PropertyController, AdminPropertyController],
   providers: [PropertyService, AdminPropertyService],
 })

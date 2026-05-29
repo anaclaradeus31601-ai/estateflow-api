@@ -3,11 +3,18 @@ import { AdminCreateUserDto } from '../dto/admin-create-user.dto';
 import { AdminUpdateUserDto } from '../dto/admin-update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { EmailAlreadyExistsException } from 'src/common/exceptions';
+import {
+  EmailAlreadyExistsException,
+  EntityNotFoundException,
+} from 'src/common/exceptions';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class UsersAdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notification: NotificationService,
+  ) {}
 
   async create(createUserDto: AdminCreateUserDto) {
     const existingUser = await this.prisma.user.findUnique({
@@ -18,7 +25,7 @@ export class UsersAdminService {
       throw new EmailAlreadyExistsException();
     }
 
-    return this.prisma.user.create({
+    const createdUser = await this.prisma.user.create({
       data: {
         ...createUserDto,
         password: bcrypt.hashSync(createUserDto.password, 10),
@@ -27,10 +34,38 @@ export class UsersAdminService {
         id: true,
         name: true,
         email: true,
+        phone: true,
+        birthDate: true,
+        budget: true,
+        city: true,
+        notes: true,
         role: true,
         avatar: true,
       },
     });
+
+    await this.notification.safeSendNotification({
+      userId: createdUser.id,
+      type: 'ACCOUNT_CREATED',
+      title: 'Conta criada',
+      message: `Sua conta foi criada com o perfil ${createdUser.role}.`,
+      data: {
+        userId: createdUser.id,
+        role: createdUser.role,
+      },
+    });
+
+    await this.notification.notifyAdmins({
+      type: 'USER_CREATED',
+      title: 'Novo usuário criado',
+      message: `O usuário ${createdUser.name} foi criado com o perfil ${createdUser.role}.`,
+      data: {
+        userId: createdUser.id,
+        role: createdUser.role,
+      },
+    });
+
+    return createdUser;
   }
 
   findAll() {
@@ -39,13 +74,51 @@ export class UsersAdminService {
         id: true,
         name: true,
         email: true,
+        phone: true,
+        birthDate: true,
+        budget: true,
+        city: true,
+        notes: true,
         role: true,
         avatar: true,
       },
     });
   }
 
+  async findOne(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        birthDate: true,
+        budget: true,
+        city: true,
+        notes: true,
+        role: true,
+        avatar: true,
+      },
+    });
+
+    if (!user) {
+      throw new EntityNotFoundException('Usuário', id);
+    }
+
+    return user;
+  }
+
   async update(id: string, updateUserDto: AdminUpdateUserDto) {
+    const userExists = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, role: true, name: true },
+    });
+
+    if (!userExists) {
+      throw new EntityNotFoundException('Usuário', id);
+    }
+
     if (updateUserDto.email) {
       const existingUser = await this.prisma.user.findUnique({
         where: { email: updateUserDto.email },
@@ -63,7 +136,7 @@ export class UsersAdminService {
       delete updateUserDto.password;
     }
 
-    return this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id },
       data: {
         ...updateUserDto,
@@ -72,10 +145,42 @@ export class UsersAdminService {
         id: true,
         name: true,
         email: true,
+        phone: true,
+        birthDate: true,
+        budget: true,
+        city: true,
+        notes: true,
         role: true,
         avatar: true,
       },
     });
+
+    if (updateUserDto.role && updateUserDto.role !== userExists.role) {
+      await this.notification.safeSendNotification({
+        userId: updatedUser.id,
+        type: 'USER_ROLE_CHANGED',
+        title: 'Perfil atualizado',
+        message: `Seu perfil foi alterado de ${userExists.role} para ${updatedUser.role}.`,
+        data: {
+          userId: updatedUser.id,
+          oldRole: userExists.role,
+          newRole: updatedUser.role,
+        },
+      });
+
+      await this.notification.notifyAdmins({
+        type: 'USER_ROLE_CHANGED',
+        title: 'Perfil de usuário alterado',
+        message: `O perfil de ${updatedUser.name} foi alterado de ${userExists.role} para ${updatedUser.role}.`,
+        data: {
+          userId: updatedUser.id,
+          oldRole: userExists.role,
+          newRole: updatedUser.role,
+        },
+      });
+    }
+
+    return updatedUser;
   }
 
   async updateAvatar(id: string, avatar: string) {
@@ -88,6 +193,11 @@ export class UsersAdminService {
         id: true,
         name: true,
         email: true,
+        phone: true,
+        birthDate: true,
+        budget: true,
+        city: true,
+        notes: true,
         role: true,
         avatar: true,
       },

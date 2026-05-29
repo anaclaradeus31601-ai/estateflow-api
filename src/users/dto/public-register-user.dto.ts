@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNotEmpty,
@@ -25,6 +25,26 @@ export class PublicRegisterUserDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @ApiPropertyOptional({ example: '1995-08-21' })
+  @IsOptional()
+  @IsString()
+  birthDate?: string;
+
+  @ApiPropertyOptional({ example: '350000' })
+  @IsOptional()
+  @IsString()
+  budget?: string;
+
+  @ApiPropertyOptional({ example: 'Florianopolis' })
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @ApiPropertyOptional({ example: 'Prefere apartamento perto do centro.' })
+  @IsOptional()
+  @IsString()
+  notes?: string;
 
   @ApiProperty({ example: 'Senha@123', description: PASSWORD_DESCRIPTION })
   @IsNotEmpty()

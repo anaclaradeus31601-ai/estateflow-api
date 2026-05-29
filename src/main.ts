@@ -9,6 +9,19 @@ import helmet from 'helmet';
 import express from 'express';
 import { join } from 'path';
 
+function getCorsOrigins() {
+  const configuredOrigins = process.env.CORS_ORIGIN
+    ?.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  if (configuredOrigins && configuredOrigins.length > 0) {
+    return configuredOrigins;
+  }
+
+  return ['http://localhost:5173'];
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
@@ -47,10 +60,10 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
 
   app.enableCors({
-    origin: 'http://localhost:5173', // React Vite
+    origin: getCorsOrigins(),
     credentials: true,
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }
 void bootstrap();

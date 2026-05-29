@@ -60,6 +60,16 @@ export class UsersAdminController {
     return this.usersService.findAll();
   }
 
+  @Get(':id')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Obter usuário por ID' })
+  @ApiParam({ name: 'id', description: 'ID do usuário' })
+  @ApiResponse({ status: 200, description: 'Usuário encontrado' })
+  @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(id);
+  }
+
   @Patch(':id')
   @Roles(UserRole.ADMIN)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })

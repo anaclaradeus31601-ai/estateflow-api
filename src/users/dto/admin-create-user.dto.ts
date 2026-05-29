@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
 import {
   IsEmail,
@@ -24,6 +24,26 @@ export class AdminCreateUserDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @ApiPropertyOptional({ example: '1995-08-21' })
+  @IsOptional()
+  @IsString()
+  birthDate?: string;
+
+  @ApiPropertyOptional({ example: '350000' })
+  @IsOptional()
+  @IsString()
+  budget?: string;
+
+  @ApiPropertyOptional({ example: 'Florianopolis' })
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @ApiPropertyOptional({ example: 'Cliente com interesse em imoveis residenciais.' })
+  @IsOptional()
+  @IsString()
+  notes?: string;
 
   @ApiProperty({ example: 'Senha@123', description: PASSWORD_DESCRIPTION })
   @IsNotEmpty()

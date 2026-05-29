@@ -1,0 +1,7 @@
+###
+Get http://localhost:3000/notification/me
+Content-Type: application/json
+
+{
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1Iiwic2lkIjoiYjllNjhmOTAtMDMzNS00OGU2LWE4NDUtMjc2ZWY3OWUyY2Q0IiwiZW1haWwiOiJjbGllbnQ1QGV4YW1wbGUuY29tIiwicm9sZSI6IlJFQUxUT1IiLCJuYW1lIjoiQ2xpZW50ZSBjb20gbm90aWZpY2HDp8OjbyIsImlhdCI6MTc4MDAzNTI5MCwiZXhwIjoxNzgwMDM2MTkwLCJqdGkiOiIwOWRjYTRjNi1hYTk5LTQ2M2QtOWE1NC03ZThmYmE3NDQ5YWIifQ.u2Kp7mrJ__yR9io9srW79r_y5azJuHIC9qjq0_8R3c4"
+}

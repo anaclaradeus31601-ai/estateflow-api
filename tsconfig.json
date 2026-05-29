@@ -13,7 +13,6 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    //eslint-disable-next-line @typescript-eslint/naming-convention
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,

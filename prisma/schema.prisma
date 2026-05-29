@@ -13,7 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 enum UserRole {
   ADMIN
   CLIENT
@@ -60,45 +59,61 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum ConversationStatus {
+  OPEN
+  ARCHIVED
+}
+
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String   @id @default(cuid())
+  email         String   @unique
   password      String
   name          String
   phone         String?
-  role          UserRole  @default(CLIENT)
+  birthDate     String?
+  budget        String?
+  notes         String?
+  city          String?
+  cpf           String?
+  role          UserRole @default(CLIENT)
   avatar        String?
-  emailVerified Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relações
-  propertiesAsRealtor Property[] @relation("RealtorProperties")
-  visitsAsClient      Visit[]    @relation("ClientVisits")
-  contractsAsClient   Contract[] @relation("ClientContracts")
-  payments            Payment[]
-  visitsAsRealtor Visit[] @relation("RealtorVisits")
-  sessions Session[]
-  auditLogs AuditLog[]
+  propertiesAsRealtor  Property[]     @relation("RealtorProperties")
+  visitsAsClient       Visit[]        @relation("ClientVisits")
+  contractsAsClient    Contract[]     @relation("ClientContracts")
+  payments             Payment[]
+  visitsAsRealtor      Visit[]        @relation("RealtorVisits")
+  sessions             Session[]
+  notification         Notification[]
+  auditLogs            AuditLog[]
+  favorites            Favorite[]
+  clientConversations  Conversation[] @relation("ClientConversations")
+  realtorConversations Conversation[] @relation("RealtorConversations")
+  createdConversations Conversation[] @relation("CreatedConversations")
+  sentMessages         Message[]      @relation("SentMessages")
 
   @@index([email])
   @@index([role])
 }
 
 model Session {
-  id            String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  refreshToken  String   @unique
+  refreshToken String @unique
 
-  ip            String?
-  userAgent     String?
+  ip        String?
+  userAgent String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  expiresAt     DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
 }
 
 model AuditLog {
@@ -128,16 +143,15 @@ model AuditLog {
   @@index([createdAt])
 }
 
-
 model Owner {
-  id          String   @id @default(cuid())
-  name        String
-  email       String   @unique
-  phone       String
-  cpfCnpj     String   @unique
-  address     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String
+  cpfCnpj   String   @unique
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relações
   properties Property[]
@@ -147,60 +161,62 @@ model Owner {
 }
 
 model Property {
-  id               String          @id @default(cuid())
-  title            String
-  description      String          @db.Text
-  type             PropertyType
-  transactionType  TransactionType
-  status           PropertyStatus  @default(AVAILABLE)
-  
+  id              String          @id @default(cuid())
+  title           String
+  description     String          @db.Text
+  type            PropertyType
+  transactionType TransactionType
+  status          PropertyStatus  @default(AVAILABLE)
+
   // Endereço
-  street           String
-  number           String
-  complement       String?
-  neighborhood     String
-  city             String
-  state            String
-  zipCode          String
-  country          String          @default("Brasil")
-  
+  street       String
+  number       String
+  complement   String?
+  neighborhood String
+  city         String
+  state        String
+  zipCode      String
+  country      String  @default("Brasil")
+
   // Detalhes do imóvel
-  area             Float
-  bedrooms         Int
-  bathrooms        Int
-  garages          Int?
-  
+  area      Float
+  bedrooms  Int
+  bathrooms Int
+  garages   Int?
+
   // Valores
-  rentPrice        Float?
-  salePrice        Float?
-  condominiumFee   Float?
-  iptu             Float?
-  
+  rentPrice      Float?
+  salePrice      Float?
+  condominiumFee Float?
+  iptu           Float?
+
   // Mídia
-  images           String[]
-  videos           String[]
-  virtualTourUrl   String?
-  
+  images         String[]
+  videos         String[]
+  virtualTourUrl String?
+
   // Localização (Google Maps)
-  latitude         Float?
-  longitude        Float?
-  
+  latitude  Float?
+  longitude Float?
+
   // Metadados
-  featured         Boolean         @default(false)
-  views            Int             @default(0)
-  
+  featured Boolean @default(false)
+  views    Int     @default(0)
+
   // Relações
-  ownerId          String
-  owner            Owner           @relation(fields: [ownerId], references: [id])
-  realtorId        String?
-  realtor          User?           @relation("RealtorProperties", fields: [realtorId], references: [id])
-  
-  amenities        PropertyAmenity[]
-  visits           Visit[]
-  contracts        Contract[]
-  
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
+  ownerId   String
+  owner     Owner   @relation(fields: [ownerId], references: [id])
+  realtorId String?
+  realtor   User?   @relation("RealtorProperties", fields: [realtorId], references: [id])
+
+  amenities     PropertyAmenity[]
+  visits        Visit[]
+  contracts     Contract[]
+  favorites     Favorite[]
+  conversations Conversation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([type])
   @@index([transactionType])
@@ -210,13 +226,28 @@ model Property {
   @@index([city])
 }
 
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
+  @@index([createdAt])
+}
+
 model Amenity {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  icon        String?
-  category    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String   @unique
+  icon      String?
+  category  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   properties PropertyAmenity[]
 
@@ -224,13 +255,13 @@ model Amenity {
 }
 
 model PropertyAmenity {
-  id         String   @id @default(cuid())
+  id         String  @id @default(cuid())
   propertyId String
   amenityId  String
   value      String?
-  
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  amenity    Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenity  Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
 
   @@unique([propertyId, amenityId])
   @@index([propertyId])
@@ -238,24 +269,24 @@ model PropertyAmenity {
 }
 
 model Visit {
-  id         String      @id @default(cuid())
+  id         String @id @default(cuid())
   propertyId String
   clientId   String
   realtorId  String
-  
+
   scheduledAt DateTime
-  duration    Int?        // em minutos
+  duration    Int? // em minutos
   status      VisitStatus @default(SCHEDULED)
-  
-  notes       String?     @db.Text
-  feedback    String?     @db.Text
-  
-  property    Property    @relation(fields: [propertyId], references: [id])
-  client      User        @relation("ClientVisits", fields: [clientId], references: [id])
-  realtor     User?       @relation("RealtorVisits",fields: [realtorId],references: [id])
-  
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+
+  notes    String? @db.Text
+  feedback String? @db.Text
+
+  property Property @relation(fields: [propertyId], references: [id])
+  client   User     @relation("ClientVisits", fields: [clientId], references: [id])
+  realtor  User?    @relation("RealtorVisits", fields: [realtorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([propertyId])
   @@index([clientId])
@@ -264,29 +295,29 @@ model Visit {
 }
 
 model Contract {
-  id              String          @id @default(cuid())
-  propertyId      String
-  clientId        String
-  
+  id         String @id @default(cuid())
+  propertyId String
+  clientId   String
+
   transactionType TransactionType
   status          ContractStatus  @default(DRAFT)
-  
-  startDate       DateTime
-  endDate         DateTime?
-  
-  rentValue       Float?
-  saleValue       Float?
-  
-  terms           String          @db.Text
-  
-  documentUrl     String?
-  
-  property        Property        @relation(fields: [propertyId], references: [id])
-  client          User            @relation("ClientContracts", fields: [clientId], references: [id])
-  payments        Payment[]
-  
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+
+  startDate DateTime
+  endDate   DateTime?
+
+  rentValue Float?
+  saleValue Float?
+
+  terms String @db.Text
+
+  documentUrl String?
+
+  property Property  @relation(fields: [propertyId], references: [id])
+  client   User      @relation("ClientContracts", fields: [clientId], references: [id])
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([propertyId])
   @@index([clientId])
@@ -295,27 +326,93 @@ model Contract {
 }
 
 model Payment {
-  id          String        @id @default(cuid())
-  contractId  String
-  userId      String
-  
-  amount      Float
-  dueDate     DateTime
-  paidDate    DateTime?
-  
-  status      PaymentStatus @default(PENDING)
-  
+  id         String @id @default(cuid())
+  contractId String
+  userId     String
+
+  amount   Float
+  dueDate  DateTime
+  paidDate DateTime?
+
+  status PaymentStatus @default(PENDING)
+
   stripePaymentIntentId String?
   stripeInvoiceId       String?
-  
-  contract    Contract      @relation(fields: [contractId], references: [id])
-  user        User          @relation(fields: [userId], references: [id])
-  
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+
+  contract Contract @relation(fields: [contractId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([contractId])
   @@index([userId])
   @@index([status])
   @@index([dueDate])
+}
+
+model Notification {
+  id      String    @id @default(cuid())
+  userId  String
+  type    String
+  title   String
+  message String
+  data    Json?
+  readAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([readAt])
+}
+
+model Conversation {
+  id                 String             @id @default(cuid())
+  clientId           String
+  realtorId          String
+  createdById        String
+  propertyId         String?
+  status             ConversationStatus @default(OPEN)
+  lastMessageAt      DateTime?
+  lastMessagePreview String?
+
+  client    User      @relation("ClientConversations", fields: [clientId], references: [id], onDelete: Cascade)
+  realtor   User      @relation("RealtorConversations", fields: [realtorId], references: [id], onDelete: Cascade)
+  createdBy User      @relation("CreatedConversations", fields: [createdById], references: [id], onDelete: Cascade)
+  property  Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  messages  Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([clientId, realtorId, propertyId])
+  @@index([clientId])
+  @@index([realtorId])
+  @@index([createdById])
+  @@index([propertyId])
+  @@index([status])
+  @@index([lastMessageAt])
+}
+
+model Message {
+  id             String    @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String    @db.Text
+  isRead         Boolean   @default(false)
+  readAt         DateTime?
+  editedAt       DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([isRead])
+  @@index([createdAt])
 }

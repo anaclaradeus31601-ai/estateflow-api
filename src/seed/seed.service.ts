@@ -25,6 +25,7 @@ export class SeedService implements OnApplicationBootstrap {
     await this.prisma.owner.deleteMany();
     await this.prisma.amenity.deleteMany();
     await this.prisma.propertyAmenity.deleteMany();
+    await this.prisma.notification.deleteMany();
     await this.prisma.user.deleteMany();
 
     console.log('🗑️ Tudo apagado');
@@ -58,6 +59,13 @@ export class SeedService implements OnApplicationBootstrap {
           role: 'REALTOR',
         },
         {
+          id: '11',
+          name: 'Ana Clara Santos de Deus',
+          email: 'anaclarasantos21601@gmail.com',
+          password: await bcrypt.hash('Clara1701@', 10),
+          role: 'CLIENT',
+        },
+        {
           id: '4',
           name: 'Admin',
           email: 'admin@example.com',
@@ -65,7 +73,7 @@ export class SeedService implements OnApplicationBootstrap {
           role: 'ADMIN',
         },
         {
-          id: '5',
+          id: 'icm5',
           name: 'Client 1',
           email: 'client1@example.com',
           password,
@@ -172,7 +180,7 @@ export class SeedService implements OnApplicationBootstrap {
           startDate: new Date(),
           endDate: new Date(),
           propertyId: '1',
-          clientId: '5',
+          clientId: 'icm5',
           terms: 'Contrato padrão',
           transactionType: 'RENT',
           status: 'ACTIVE',
@@ -186,7 +194,7 @@ export class SeedService implements OnApplicationBootstrap {
         {
           contractId: '1',
           amount: 2500,
-          userId: '5',
+          userId: 'icm5',
           dueDate: new Date(),
           paidDate: new Date(),
           status: 'COMPLETED',
@@ -200,7 +208,7 @@ export class SeedService implements OnApplicationBootstrap {
         {
           scheduledAt: new Date(),
           propertyId: '1',
-          clientId: '5',
+          clientId: 'icm5',
           realtorId: '1',
           duration: 60,
           status: 'SCHEDULED',

@@ -17,3 +17,14 @@ Content-Type: application/json
     "status": "SCHEDULED",
     "notes": "Client is interested in the property and wants to see it on June 1st at 10 AM."
 }
+
+
+###
+PATCH http://localhost:3000/admin/visit/cmpqijvqm0001kz4p4paq0kn0
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0Iiwic2lkIjoiNWExMzk5OTktMDIxNi00MzhhLTljZDMtNTY0MjFlMjgyMjE4IiwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsInJvbGUiOiJBRE1JTiIsIm5hbWUiOiJBZG1pbiIsImlhdCI6MTc4MDAzNDkyMiwiZXhwIjoxNzgwMDM1ODIyLCJqdGkiOiIyZjRhZTg1Ny0zNjZiLTRiZGEtYmVkMi0zMzk2YTJhZDQwZTMifQ.xEhLIPqIE5RVG2hNUvvRBbmtCP8Pvius-XoZ0D7-le8
+
+{
+    "status": "CANCELLED",
+    "notes": "Realtor had a scheduling conflict and needs to cancel the visit."
+}

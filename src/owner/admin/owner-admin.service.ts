@@ -7,10 +7,14 @@ import {
   EmailAlreadyExistsException,
   EntityNotFoundException,
 } from 'src/common/exceptions';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class OwnerAdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notification: NotificationService,
+  ) {}
 
   async create(createOwnerDto: CreateOwnerDto) {
     const ownerExists = await this.prisma.owner.findUnique({
@@ -29,7 +33,7 @@ export class OwnerAdminService {
       throw new CpfCnpjAlreadyExistsException();
     }
 
-    return this.prisma.owner.create({
+    const createdOwner = await this.prisma.owner.create({
       data: {
         name: createOwnerDto.name,
         email: createOwnerDto.email,
@@ -45,6 +49,18 @@ export class OwnerAdminService {
         cpfCnpj: true,
       },
     });
+
+    await this.notification.notifyAdmins({
+      type: 'OWNER_CREATED',
+      title: 'Novo proprietário cadastrado',
+      message: `O proprietário ${createdOwner.name} foi cadastrado.`,
+      data: {
+        ownerId: createdOwner.id,
+        email: createdOwner.email,
+      },
+    });
+
+    return createdOwner;
   }
 
   async update(id: string, updateOwnerDto: UpdateOwnerDto) {
@@ -56,7 +72,7 @@ export class OwnerAdminService {
       throw new EntityNotFoundException('Proprietário', id);
     }
 
-    return this.prisma.owner.update({
+    const updatedOwner = await this.prisma.owner.update({
       where: { id },
       data: {
         name: updateOwnerDto.name,
@@ -72,6 +88,17 @@ export class OwnerAdminService {
         cpfCnpj: true,
       },
     });
+
+    await this.notification.notifyAdmins({
+      type: 'OWNER_UPDATED',
+      title: 'Proprietário atualizado',
+      message: `O proprietário ${updatedOwner.name} foi atualizado.`,
+      data: {
+        ownerId: updatedOwner.id,
+      },
+    });
+
+    return updatedOwner;
   }
 
   async remove(id: string) {
@@ -83,8 +110,19 @@ export class OwnerAdminService {
       throw new EntityNotFoundException('Proprietário', id);
     }
 
-    return this.prisma.owner.delete({
+    const deletedOwner = await this.prisma.owner.delete({
       where: { id },
     });
+
+    await this.notification.notifyAdmins({
+      type: 'OWNER_REMOVED',
+      title: 'Proprietário removido',
+      message: `O proprietário ${deletedOwner.name} foi removido.`,
+      data: {
+        ownerId: deletedOwner.id,
+      },
+    });
+
+    return deletedOwner;
   }
 }

@@ -8,9 +8,16 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Health check' })
+  @ApiOperation({ summary: 'Mensagem básica da API' })
   @ApiResponse({ status: 200, description: 'API em execução' })
   getHello(): string {
     return this.appService.getHello();
+  }
+
+  @Get('health')
+  @ApiOperation({ summary: 'Health check da API e banco de dados' })
+  @ApiResponse({ status: 200, description: 'Serviço saudável' })
+  async getHealth() {
+    return this.appService.getHealth();
   }
 }

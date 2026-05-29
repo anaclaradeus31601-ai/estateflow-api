@@ -18,6 +18,26 @@ export class PublicUpdateProfileDto {
   @IsString()
   phone?: string;
 
+  @ApiPropertyOptional({ example: '1995-08-21' })
+  @IsOptional()
+  @IsString()
+  birthDate?: string;
+
+  @ApiPropertyOptional({ example: '350000' })
+  @IsOptional()
+  @IsString()
+  budget?: string;
+
+  @ApiPropertyOptional({ example: 'Florianopolis' })
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @ApiPropertyOptional({ example: 'Prefere apartamento perto do centro.' })
+  @IsOptional()
+  @IsString()
+  notes?: string;
+
   @ApiPropertyOptional({
     example: 'Senha@123',
     description: PASSWORD_DESCRIPTION,
